@@ -1,0 +1,6 @@
+{
+  "name": "MOTION",
+  "description": "A calm, collaborative work platform for small teams with real-time updates, Blocker Radar, and Decision Notes.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
