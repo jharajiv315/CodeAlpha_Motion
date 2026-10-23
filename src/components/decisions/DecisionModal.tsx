@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { api } from '../../lib/api.ts';
 import { removeEmojis } from '../../lib/utils.ts';
 import { FileCheck, X } from 'lucide-react';
@@ -6,8 +6,8 @@ import { FileCheck, X } from 'lucide-react';
 interface DecisionModalProps {
   taskId: string;
   taskTitle: string;
-  sourceCommentId?: string | null;
   defaultSummary?: string;
+  sourceCommentId?: string;
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
@@ -16,8 +16,8 @@ interface DecisionModalProps {
 export function DecisionModal({
   taskId,
   taskTitle,
-  sourceCommentId,
   defaultSummary = '',
+  sourceCommentId,
   isOpen,
   onClose,
   onSuccess,
@@ -28,12 +28,21 @@ export function DecisionModal({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (defaultSummary) {
+      setSummary(defaultSummary);
+      if (!title) {
+        setTitle(defaultSummary.slice(0, 40) + (defaultSummary.length > 40 ? '...' : ''));
+      }
+    }
+  }, [defaultSummary]);
+
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !summary.trim()) {
-      setError('Both decision title and summary are required.');
+      setError('Please provide a decision title and summary.');
       return;
     }
 
@@ -43,8 +52,8 @@ export function DecisionModal({
       await api.decisions.record(taskId, {
         title: removeEmojis(title),
         summary: removeEmojis(summary),
-        rationale: removeEmojis(rationale) || undefined,
-        sourceCommentId: sourceCommentId || null,
+        rationale: rationale ? removeEmojis(rationale) : undefined,
+        sourceCommentId: sourceCommentId,
       });
       setTitle('');
       setSummary('');
@@ -59,48 +68,48 @@ export function DecisionModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/25 backdrop-blur-2xs p-4">
-      <div className="bg-white rounded-xl shadow-lg border border-[#E7E9ED] max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-        <div className="flex items-center justify-between px-5 py-3 border-b border-[#E7E9ED] bg-[#F8F9FB]">
-          <div className="flex items-center gap-1.5 text-[#20242B] font-semibold text-xs">
-            <FileCheck className="w-4 h-4 text-[#5965D8]" />
-            <span>Record Decision Note</span>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#33382F]/20 p-4">
+      <div className="motion-modal rounded-[12px] max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#EAE4D8] bg-[#FFFCF6]">
+          <div className="flex items-center gap-2 text-[#33382F] font-semibold text-[15px]">
+            <FileCheck className="w-4 h-4 text-[#596D56]" />
+            <h2>Record Decision</h2>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-[#9CA3AF] hover:text-[#20242B] p-0.5 rounded transition-colors"
+            className="text-[#70786D] hover:text-[#33382F] p-1 rounded-[6px] hover:bg-[#EDE7DA] transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-5 space-y-3.5 text-xs">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 text-[13px]">
           <div>
-            <span className="text-[11px] font-medium text-[#6D7480] block mb-1">Target Task</span>
-            <p className="font-semibold text-[#20242B] bg-[#F8F9FB] p-2 rounded-lg border border-[#E7E9ED]">
+            <span className="text-[11.5px] font-semibold text-[#70786D] block mb-1">Task</span>
+            <p className="font-semibold text-[#33382F] bg-[#F3EFE5] p-2.5 rounded-[9px] border border-[#DED8CB]">
               {taskTitle}
             </p>
           </div>
 
           <div>
-            <label htmlFor="decision-title" className="block font-medium text-[#20242B] mb-1">
-              Decision Title <span className="text-[#C54D4D]">*</span>
+            <label htmlFor="decision-title" className="block font-semibold text-[#33382F] mb-1.5">
+              Decision Title <span className="text-[#985C51]">*</span>
             </label>
             <input
               id="decision-title"
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Use PostgreSQL as primary database"
-              className="w-full text-xs border border-[#E7E9ED] rounded-lg p-2 text-[#20242B] placeholder-[#9CA3AF] focus:outline-hidden focus:border-[#5965D8]"
+              placeholder="e.g. Standardize on PostgreSQL as primary database"
+              className="w-full text-[13px] motion-input rounded-[9px] p-2.5"
               autoFocus
             />
           </div>
 
           <div>
-            <label htmlFor="decision-summary" className="block font-medium text-[#20242B] mb-1">
-              What was decided? <span className="text-[#C54D4D]">*</span>
+            <label htmlFor="decision-summary" className="block font-semibold text-[#33382F] mb-1.5">
+              What was decided? <span className="text-[#985C51]">*</span>
             </label>
             <textarea
               id="decision-summary"
@@ -108,39 +117,43 @@ export function DecisionModal({
               value={summary}
               onChange={(e) => setSummary(e.target.value)}
               placeholder="e.g. Standardize on PostgreSQL with relational schemas and indexes."
-              className="w-full text-xs border border-[#E7E9ED] rounded-lg p-2 text-[#20242B] placeholder-[#9CA3AF] focus:outline-hidden focus:border-[#5965D8] resize-none"
+              className="w-full text-[13px] motion-input rounded-[9px] p-2.5 resize-none"
             />
           </div>
 
           <div>
-            <label htmlFor="decision-rationale" className="block font-medium text-[#20242B] mb-1">
-              Why was this chosen? <span className="text-[#9CA3AF] font-normal">(Rationale)</span>
+            <label htmlFor="decision-rationale" className="block font-semibold text-[#33382F] mb-1.5">
+              Rationale <span className="text-[#70786D] font-normal">(Optional)</span>
             </label>
             <textarea
               id="decision-rationale"
               rows={2}
               value={rationale}
               onChange={(e) => setRationale(e.target.value)}
-              placeholder="e.g. Transactional consistency, relational multi-tenant isolation, team experience."
-              className="w-full text-xs border border-[#E7E9ED] rounded-lg p-2 text-[#20242B] placeholder-[#9CA3AF] focus:outline-hidden focus:border-[#5965D8] resize-none"
+              placeholder="e.g. Transactional consistency, multi-tenant isolation, team familiarity."
+              className="w-full text-[13px] motion-input rounded-[9px] p-2.5 resize-none"
             />
           </div>
 
-          {error && <div className="p-2.5 text-xs bg-[#FEE2E2] text-[#991B1B] rounded-lg">{error}</div>}
+          {error && (
+            <div className="p-3 text-[12.5px] bg-[#F3E7DD] text-[#985C51] border border-[#DFC2B0] rounded-[9px]">
+              {error}
+            </div>
+          )}
 
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#F4F5F7]">
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#EAE4D8]">
             <button
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="px-3 py-1.5 text-xs text-[#6D7480] hover:text-[#20242B] transition-colors"
+              className="btn-tertiary px-3.5 py-1.5 text-[12.5px] cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="px-3 py-1.5 text-xs bg-[#20242B] hover:bg-[#323842] text-white font-medium rounded-lg transition-colors cursor-pointer"
+              className="btn-primary px-4 py-2 text-[12.5px] rounded-[9px] cursor-pointer disabled:opacity-50"
             >
               {submitting ? 'Recording...' : 'Record Decision'}
             </button>

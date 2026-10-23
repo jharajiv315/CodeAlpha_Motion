@@ -2,44 +2,55 @@ import React, { useState, useEffect } from 'react';
 import type { BoardColumn, WorkspaceMember, PriorityLevel, Task } from '../../types/index.ts';
 import { api } from '../../lib/api.ts';
 import { removeEmojis } from '../../lib/utils.ts';
-import { X, Link2 } from 'lucide-react';
+import { X, Link2, Check } from 'lucide-react';
 
 interface CreateTaskModalProps {
   projectId: string;
   columns: BoardColumn[];
-  defaultColumnId?: string;
   members: WorkspaceMember[];
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  initialColumnId?: string;
+  defaultColumnId?: string;
 }
 
 export function CreateTaskModal({
   projectId,
   columns,
-  defaultColumnId,
   members,
   isOpen,
   onClose,
   onSuccess,
+  initialColumnId,
+  defaultColumnId,
 }: CreateTaskModalProps) {
+  const effectiveColId = defaultColumnId || initialColumnId;
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [columnId, setColumnId] = useState(defaultColumnId || (columns[0]?.id ?? ''));
+  const [columnId, setColumnId] = useState(effectiveColId || columns[0]?.id || '');
   const [priority, setPriority] = useState<PriorityLevel>('MEDIUM');
   const [dueDate, setDueDate] = useState('');
   const [estimatedHours, setEstimatedHours] = useState('');
   const [selectedAssignees, setSelectedAssignees] = useState<string[]>([]);
-  const [existingTasks, setExistingTasks] = useState<Task[]>([]);
   const [selectedDependencies, setSelectedDependencies] = useState<string[]>([]);
+  const [existingTasks, setExistingTasks] = useState<Task[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (effectiveColId) {
+      setColumnId(effectiveColId);
+    } else if (columns.length > 0 && !columnId) {
+      setColumnId(columns[0].id);
+    }
+  }, [effectiveColId, columns, columnId]);
 
   useEffect(() => {
     if (isOpen && projectId) {
       api.tasks.listByProject(projectId).then((res) => {
         setExistingTasks(res.tasks || []);
-      }).catch(() => {});
+      }).catch(console.error);
     }
   }, [isOpen, projectId]);
 
@@ -56,15 +67,16 @@ export function CreateTaskModal({
     setError(null);
     try {
       await api.tasks.create(projectId, {
-        title: removeEmojis(title),
-        description: removeEmojis(description),
-        columnId: columnId || columns[0].id,
+        columnId,
+        title: removeEmojis(title.trim()),
+        description: removeEmojis(description.trim()),
         priority,
-        dueDate: dueDate ? new Date(dueDate).toISOString() : null,
+        dueDate: dueDate ? new Date(dueDate).toISOString() : undefined,
         estimatedHours: estimatedHours ? parseFloat(estimatedHours) : undefined,
         assigneeIds: selectedAssignees,
         dependsOnTaskIds: selectedDependencies,
       });
+
       setTitle('');
       setDescription('');
       setDueDate('');
@@ -87,23 +99,24 @@ export function CreateTaskModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/25 backdrop-blur-2xs p-4">
-      <div className="bg-white rounded-xl shadow-lg border border-[#E7E9ED] max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-        <div className="flex items-center justify-between px-5 py-3 border-b border-[#E7E9ED] bg-[#F8F9FB]">
-          <h2 className="text-xs font-bold text-[#20242B]">New Task</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#33382F]/20 p-4">
+      <div className="motion-modal rounded-[12px] max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#EAE4D8] bg-[#FFFCF6]">
+          <h2 className="text-[16px] font-semibold text-[#33382F]">Add Task</h2>
           <button
             type="button"
             onClick={onClose}
-            className="text-[#9CA3AF] hover:text-[#20242B] p-0.5 rounded transition-colors"
+            className="text-[#70786D] hover:text-[#33382F] p-1 rounded-[6px] hover:bg-[#EDE7DA] transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-5 space-y-3.5 text-xs">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 text-[13px]">
           <div>
-            <label htmlFor="create-task-title" className="block font-medium text-[#20242B] mb-1">
-              Title <span className="text-[#C54D4D]">*</span>
+            <label htmlFor="create-task-title" className="block font-semibold text-[#33382F] mb-1.5">
+              Title <span className="text-[#985C51]">*</span>
             </label>
             <input
               id="create-task-title"
@@ -111,35 +124,35 @@ export function CreateTaskModal({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Audit API rate limits and response codes"
-              className="w-full text-xs border border-[#E7E9ED] rounded-lg p-2 text-[#20242B] placeholder-[#9CA3AF] focus:outline-hidden focus:border-[#5965D8]"
+              className="w-full text-[13.5px] motion-input rounded-[9px] px-3 py-2"
               autoFocus
             />
           </div>
 
           <div>
-            <label htmlFor="create-task-desc" className="block font-medium text-[#20242B] mb-1">
-              Description <span className="text-[#9CA3AF] font-normal">(Optional)</span>
+            <label htmlFor="create-task-desc" className="block font-semibold text-[#33382F] mb-1.5">
+              Description <span className="text-[#70786D] font-normal">(Optional)</span>
             </label>
             <textarea
               id="create-task-desc"
               rows={2}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Add key requirements or context..."
-              className="w-full text-xs border border-[#E7E9ED] rounded-lg p-2 text-[#20242B] placeholder-[#9CA3AF] resize-none focus:outline-hidden focus:border-[#5965D8]"
+              placeholder="Add deliverables, acceptance criteria, or context..."
+              className="w-full text-[13px] motion-input rounded-[9px] px-3 py-2 resize-none"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label htmlFor="create-task-col" className="block font-medium text-[#20242B] mb-1">
+              <label htmlFor="create-task-col" className="block font-semibold text-[#33382F] mb-1.5">
                 Column
               </label>
               <select
                 id="create-task-col"
                 value={columnId}
                 onChange={(e) => setColumnId(e.target.value)}
-                className="w-full text-xs border border-[#E7E9ED] rounded-lg p-1.5 bg-white text-[#20242B] focus:outline-hidden focus:border-[#5965D8]"
+                className="w-full text-[13px] motion-input rounded-[9px] px-3 py-2 cursor-pointer"
               >
                 {columns.map((col) => (
                   <option key={col.id} value={col.id}>
@@ -150,14 +163,14 @@ export function CreateTaskModal({
             </div>
 
             <div>
-              <label htmlFor="create-task-priority" className="block font-medium text-[#20242B] mb-1">
+              <label htmlFor="create-task-priority" className="block font-semibold text-[#33382F] mb-1.5">
                 Priority
               </label>
               <select
                 id="create-task-priority"
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as PriorityLevel)}
-                className="w-full text-xs border border-[#E7E9ED] rounded-lg p-1.5 bg-white text-[#20242B] focus:outline-hidden focus:border-[#5965D8]"
+                className="w-full text-[13px] motion-input rounded-[9px] px-3 py-2 cursor-pointer"
               >
                 <option value="LOW">Low</option>
                 <option value="MEDIUM">Medium</option>
@@ -168,45 +181,40 @@ export function CreateTaskModal({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label htmlFor="create-task-due" className="block font-medium text-[#20242B] mb-1">
-                Due Date <span className="text-[#9CA3AF] font-normal">(Optional)</span>
+              <label htmlFor="create-task-due" className="block font-semibold text-[#33382F] mb-1.5">
+                Due Date
               </label>
               <input
                 id="create-task-due"
                 type="date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
-                className="w-full text-xs border border-[#E7E9ED] rounded-lg p-1.5 bg-white text-[#20242B] focus:outline-hidden focus:border-[#5965D8]"
+                className="w-full text-[13px] motion-input rounded-[9px] px-3 py-1.5"
               />
             </div>
 
             <div>
-              <label htmlFor="create-task-estimate" className="block font-medium text-[#20242B] mb-1">
-                Estimated Effort <span className="text-[#9CA3AF] font-normal">(Optional)</span>
+              <label htmlFor="create-task-estimate" className="block font-semibold text-[#33382F] mb-1.5">
+                Estimate (hrs)
               </label>
-              <div className="relative">
-                <input
-                  id="create-task-estimate"
-                  type="number"
-                  step="0.5"
-                  min="0.1"
-                  value={estimatedHours}
-                  onChange={(e) => setEstimatedHours(e.target.value)}
-                  placeholder="e.g. 4.0"
-                  className="w-full text-xs font-mono border border-[#E7E9ED] rounded-lg p-1.5 pr-8 bg-white text-[#20242B] focus:outline-hidden focus:border-[#5965D8]"
-                />
-                <span className="absolute right-2.5 top-1.5 text-[11px] text-[#9CA3AF]">
-                  hrs
-                </span>
-              </div>
+              <input
+                id="create-task-estimate"
+                type="number"
+                step="0.5"
+                min="0.1"
+                value={estimatedHours}
+                onChange={(e) => setEstimatedHours(e.target.value)}
+                placeholder="e.g. 4.0"
+                className="w-full text-[13px] motion-input rounded-[9px] px-3 py-1.5"
+              />
             </div>
           </div>
 
           <div>
-            <span className="block font-medium text-[#20242B] mb-1.5">
-              Assign Teammates
+            <span className="block font-semibold text-[#33382F] mb-1.5">
+              Assignees
             </span>
-            <div className="flex flex-wrap gap-1 max-h-24 overflow-y-auto p-1 border border-[#E7E9ED] rounded-lg">
+            <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto p-2 bg-[#F3EFE5] border border-[#DED8CB] rounded-[9px]">
               {members.map((m) => {
                 const selected = selectedAssignees.includes(m.user_id);
                 return (
@@ -214,12 +222,13 @@ export function CreateTaskModal({
                     type="button"
                     key={m.user_id}
                     onClick={() => toggleAssignee(m.user_id)}
-                    className={`text-xs px-2 py-0.5 rounded-full border transition-colors flex items-center gap-1 cursor-pointer ${
+                    className={`text-[12px] px-2.5 py-1 rounded-[6px] border transition-colors flex items-center gap-1.5 cursor-pointer ${
                       selected
-                        ? 'bg-[#20242B] text-white border-[#20242B]'
-                        : 'bg-white text-[#6D7480] border-[#E7E9ED] hover:border-[#D1D5DB]'
+                        ? 'bg-[#E3EBDD] text-[#33382F] border-[#C8D8C1] font-semibold'
+                        : 'bg-[#FFFCF6] text-[#5D655A] border-[#DED8CB] hover:bg-[#EDE7DA]'
                     }`}
                   >
+                    {selected && <Check className="w-3 h-3 text-[#596D56]" />}
                     <span>{m.name}</span>
                   </button>
                 );
@@ -227,14 +236,13 @@ export function CreateTaskModal({
             </div>
           </div>
 
-          {/* Prerequisites (Task Dependencies) */}
           {existingTasks.length > 0 && (
             <div>
-              <span className="block font-medium text-[#20242B] mb-1.5 flex items-center gap-1.5">
-                <Link2 className="w-3 h-3 text-[#EA580C]" />
-                <span>Prerequisites / Blocked by (Optional)</span>
+              <span className="block font-semibold text-[#33382F] mb-1.5 flex items-center gap-1.5">
+                <Link2 className="w-3.5 h-3.5 text-[#70786D]" />
+                <span>Prerequisites (Optional)</span>
               </span>
-              <div className="flex flex-wrap gap-1 max-h-24 overflow-y-auto p-1.5 border border-[#E7E9ED] rounded-lg bg-[#FAF8F5]/60">
+              <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto p-2 bg-[#F3EFE5] border border-[#DED8CB] rounded-[9px]">
                 {existingTasks.map((t) => {
                   const selected = selectedDependencies.includes(t.id);
                   return (
@@ -246,10 +254,10 @@ export function CreateTaskModal({
                           prev.includes(t.id) ? prev.filter((id) => id !== t.id) : [...prev, t.id]
                         )
                       }
-                      className={`text-xs px-2 py-0.5 rounded-full border transition-colors flex items-center gap-1 cursor-pointer truncate max-w-full ${
+                      className={`text-[12px] px-2.5 py-1 rounded-[6px] border transition-colors flex items-center gap-1 cursor-pointer truncate max-w-full ${
                         selected
-                          ? 'bg-[#EA580C] text-white border-[#EA580C]'
-                          : 'bg-white text-[#6D7480] border-[#E7E9ED] hover:border-[#D1D5DB]'
+                          ? 'bg-[#F3E7DD] text-[#7B4B3A] border-[#DFC2B0] font-semibold'
+                          : 'bg-[#FFFCF6] text-[#5D655A] border-[#DED8CB] hover:bg-[#EDE7DA]'
                       }`}
                       title={t.title}
                     >
@@ -261,21 +269,25 @@ export function CreateTaskModal({
             </div>
           )}
 
-          {error && <div className="p-2.5 text-xs bg-[#FEE2E2] text-[#991B1B] rounded-lg">{error}</div>}
+          {error && (
+            <div className="p-3 text-[12.5px] bg-[#F3E7DD] text-[#985C51] border border-[#DFC2B0] rounded-[9px]">
+              {error}
+            </div>
+          )}
 
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#F4F5F7]">
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#EAE4D8]">
             <button
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="px-3 py-1.5 text-xs text-[#6D7480] hover:text-[#20242B] transition-colors"
+              className="btn-tertiary px-3.5 py-1.5 text-[12.5px] cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="px-3.5 py-1.5 text-xs bg-[#20242B] hover:bg-[#323842] text-white font-medium rounded-lg transition-colors cursor-pointer"
+              className="btn-primary px-4 py-2 text-[12.5px] rounded-[9px] cursor-pointer disabled:opacity-50"
             >
               {submitting ? 'Creating...' : 'Create Task'}
             </button>

@@ -33,10 +33,8 @@ export function HeaderSearchBar({ onSearchFocus }: HeaderSearchBarProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Global keyboard shortcut to focus search: Cmd+K / Ctrl+K or '/'
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't trigger if user is typing in another input/textarea
       const target = e.target as HTMLElement;
       if (
         target &&
@@ -66,7 +64,6 @@ export function HeaderSearchBar({ onSearchFocus }: HeaderSearchBarProps) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onSearchFocus]);
 
-  // Click outside to close filter menu
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (
@@ -86,17 +83,16 @@ export function HeaderSearchBar({ onSearchFocus }: HeaderSearchBarProps) {
   return (
     <div
       ref={containerRef}
-      className="relative flex items-center w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg transition-all"
+      className="relative flex items-center w-full max-w-xs sm:max-w-sm md:max-w-md transition-all"
     >
-      {/* Search Input Box */}
       <div
-        className={`flex items-center w-full bg-[#F8F9FB] hover:bg-[#F3F4F6] focus-within:bg-white border rounded-lg px-2.5 py-1 text-xs transition-all duration-150 ${
+        className={`flex items-center w-full px-3 h-9 text-[12.5px] rounded-[6px] transition-colors border ${
           hasActiveFilters
-            ? 'border-[#5965D8]/50 ring-1 ring-[#5965D8]/20 bg-white'
-            : 'border-[#E7E9ED] focus-within:border-[#5965D8] focus-within:ring-2 focus-within:ring-[#5965D8]/20'
+            ? 'bg-[#FFFCF6] border-[#596D56]'
+            : 'bg-[#F3EFE5] hover:bg-[#EDE7DA] border-[#DED8CB] focus-within:bg-[#FFFCF6] focus-within:border-[#596D56]'
         }`}
       >
-        <Search className="w-3.5 h-3.5 text-[#9CA3AF] shrink-0 mr-2" />
+        <Search className="w-3.5 h-3.5 text-[#70786D] shrink-0 mr-2" />
 
         <input
           ref={inputRef}
@@ -107,11 +103,10 @@ export function HeaderSearchBar({ onSearchFocus }: HeaderSearchBarProps) {
             setSearchQuery(e.target.value);
             onSearchFocus?.();
           }}
-          placeholder="Filter tasks by keyword, assignee, or priority..."
-          className="w-full bg-transparent text-[#20242B] placeholder-[#9CA3AF] focus:outline-hidden text-xs truncate"
+          placeholder="Search tasks (⌘K)..."
+          className="w-full bg-transparent text-[#33382F] placeholder-[#70786D] focus:outline-hidden text-[12.5px] truncate font-medium"
         />
 
-        {/* Clear query icon */}
         {searchQuery && (
           <button
             type="button"
@@ -119,62 +114,52 @@ export function HeaderSearchBar({ onSearchFocus }: HeaderSearchBarProps) {
               setSearchQuery('');
               inputRef.current?.focus();
             }}
-            className="p-0.5 text-[#9CA3AF] hover:text-[#20242B] rounded transition-colors mr-1 cursor-pointer"
+            className="p-0.5 text-[#70786D] hover:text-[#33382F] rounded-[4px] transition-colors mr-1 cursor-pointer"
             title="Clear text filter"
             aria-label="Clear text filter"
           >
-            <X className="w-3 h-3" />
+            <X className="w-3.5 h-3.5" />
           </button>
         )}
 
-        {/* Keyboard shortcut hint */}
-        {!searchQuery && !hasActiveFilters && (
-          <kbd className="hidden sm:inline-block px-1.5 py-0.2 text-[10px] font-mono text-[#9CA3AF] bg-white border border-[#E7E9ED] rounded shadow-2xs shrink-0 select-none">
-            /
-          </kbd>
-        )}
-
-        {/* Filter Toggle Button */}
         <button
           type="button"
           onClick={() => setShowFilterMenu((prev) => !prev)}
-          className={`flex items-center gap-1 ml-1.5 pl-1.5 border-l border-[#E7E9ED] transition-colors cursor-pointer text-[11px] font-medium py-0.5 ${
+          className={`flex items-center gap-1.5 ml-1.5 pl-2 border-l border-[#DED8CB] transition-colors cursor-pointer text-[12px] font-medium py-0.5 ${
             selectedAssignee !== 'all' || selectedPriority !== 'all' || onlyBlocked
-              ? 'text-[#5965D8]'
-              : 'text-[#6D7480] hover:text-[#20242B]'
+              ? 'text-[#596D56] font-semibold'
+              : 'text-[#5D655A] hover:text-[#33382F]'
           }`}
           title="Filter by Assignee, Priority, or Blocked status"
           aria-label="Toggle filters menu"
         >
-          <SlidersHorizontal className="w-3 h-3 shrink-0" />
+          <SlidersHorizontal className="w-3.5 h-3.5 shrink-0" />
           {activeFilterCount > 0 && (
-            <span className="w-4 h-4 rounded-full bg-[#5965D8] text-white text-[9px] font-bold flex items-center justify-center shrink-0">
+            <span className="px-1.5 py-0.2 rounded-[4px] bg-[#E3EBDD] text-[#33382F] text-[11px] font-semibold">
               {activeFilterCount}
             </span>
           )}
         </button>
       </div>
 
-      {/* Filter Popover Dropdown */}
       {showFilterMenu && (
-        <div className="absolute right-0 top-10 z-50 w-72 bg-white border border-[#E7E9ED] rounded-xl shadow-lg p-3 text-xs space-y-3 animate-in fade-in zoom-in-95 duration-100">
-          <div className="flex items-center justify-between pb-1.5 border-b border-[#F4F5F7]">
-            <span className="font-semibold text-[#20242B] text-xs">Filter Tasks</span>
+        <div className="absolute right-0 top-11 z-50 w-72 motion-popover p-4 text-[12.5px] space-y-3.5">
+          <div className="flex items-center justify-between pb-2 border-b border-[#EAE4D8]">
+            <span className="font-semibold text-[#33382F] text-[13px]">Filter Tasks</span>
             {hasActiveFilters && (
               <button
                 type="button"
                 onClick={resetFilters}
-                className="text-[11px] text-[#C54D4D] hover:underline flex items-center gap-1 cursor-pointer"
+                className="text-[11.5px] text-[#985C51] hover:underline flex items-center gap-1 cursor-pointer font-medium"
               >
-                <RotateCcw className="w-2.5 h-2.5" />
+                <RotateCcw className="w-3 h-3" />
                 <span>Reset all</span>
               </button>
             )}
           </div>
 
-          {/* Priority Filter */}
           <div className="space-y-1">
-            <label htmlFor="header-priority-filter" className="block text-[11px] font-medium text-[#6D7480]">
+            <label htmlFor="header-priority-filter" className="block text-[12px] font-medium text-[#5D655A]">
               Priority
             </label>
             <select
@@ -184,7 +169,7 @@ export function HeaderSearchBar({ onSearchFocus }: HeaderSearchBarProps) {
                 setSelectedPriority(e.target.value);
                 onSearchFocus?.();
               }}
-              className="w-full bg-[#F8F9FB] border border-[#E7E9ED] rounded-lg px-2 py-1.5 text-xs text-[#20242B] focus:outline-hidden focus:border-[#5965D8]"
+              className="w-full motion-input px-2.5 py-1.5 text-[12.5px] cursor-pointer"
             >
               <option value="all">All Priorities</option>
               <option value="HIGH">High Priority</option>
@@ -193,9 +178,8 @@ export function HeaderSearchBar({ onSearchFocus }: HeaderSearchBarProps) {
             </select>
           </div>
 
-          {/* Assignee Filter */}
           <div className="space-y-1">
-            <label htmlFor="header-assignee-filter" className="block text-[11px] font-medium text-[#6D7480]">
+            <label htmlFor="header-assignee-filter" className="block text-[12px] font-medium text-[#5D655A]">
               Assignee
             </label>
             <select
@@ -205,7 +189,7 @@ export function HeaderSearchBar({ onSearchFocus }: HeaderSearchBarProps) {
                 setSelectedAssignee(e.target.value);
                 onSearchFocus?.();
               }}
-              className="w-full bg-[#F8F9FB] border border-[#E7E9ED] rounded-lg px-2 py-1.5 text-xs text-[#20242B] focus:outline-hidden focus:border-[#5965D8]"
+              className="w-full motion-input px-2.5 py-1.5 text-[12.5px] cursor-pointer"
             >
               <option value="all">All Assignees</option>
               {workspaceMembers.map((m) => (
@@ -216,12 +200,11 @@ export function HeaderSearchBar({ onSearchFocus }: HeaderSearchBarProps) {
             </select>
           </div>
 
-          {/* Blocker Filter Toggle */}
-          <div className="pt-1 border-t border-[#F4F5F7] flex items-center justify-between">
-            <span className="text-[11px] text-[#6D7480] flex items-center gap-1.5">
-              <AlertTriangle className="w-3 h-3 text-[#B97828]" />
+          <div className="pt-2 border-t border-[#EAE4D8] flex items-center justify-between">
+            <label htmlFor="header-blocked-filter" className="text-[12px] text-[#A46F5C] flex items-center gap-1.5 font-medium cursor-pointer">
+              <AlertTriangle className="w-3.5 h-3.5 text-[#A46F5C]" />
               <span>Only Blocked Tasks</span>
-            </span>
+            </label>
             <input
               type="checkbox"
               id="header-blocked-filter"
@@ -230,17 +213,16 @@ export function HeaderSearchBar({ onSearchFocus }: HeaderSearchBarProps) {
                 setOnlyBlocked(e.target.checked);
                 onSearchFocus?.();
               }}
-              className="rounded border-[#E7E9ED] text-[#5965D8] focus:ring-[#5965D8] cursor-pointer"
+              className="rounded-[4px] border-[#DED8CB] text-[#596D56] focus:ring-[#596D56] cursor-pointer h-4 w-4 accent-[#596D56]"
             />
           </div>
 
-          {/* Active summary helper */}
-          <div className="pt-2 border-t border-[#F4F5F7] flex items-center justify-between text-[10px] text-[#9CA3AF]">
-            <span>Tip: type keyword, assignee, or priority in search</span>
+          <div className="pt-2.5 border-t border-[#EAE4D8] flex items-center justify-between text-[11.5px] text-[#70786D]">
+            <span>Applies across project views</span>
             <button
               type="button"
               onClick={() => setShowFilterMenu(false)}
-              className="px-2 py-0.5 bg-[#20242B] text-white rounded font-medium cursor-pointer"
+              className="px-3 py-1 btn-primary cursor-pointer"
             >
               Done
             </button>

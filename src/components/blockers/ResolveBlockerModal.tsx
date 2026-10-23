@@ -47,65 +47,73 @@ export function ResolveBlockerModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/25 backdrop-blur-2xs p-4">
-      <div className="bg-white rounded-xl shadow-lg border border-[#E7E9ED] max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-        <div className="flex items-center justify-between px-5 py-3 border-b border-[#E7E9ED] bg-[#F8F9FB]">
-          <div className="flex items-center gap-1.5 text-[#20242B] font-semibold text-xs">
-            <CheckCircle2 className="w-4 h-4 text-[#238565]" />
-            <span>Resolve Blocker</span>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#33382F]/20 p-4">
+      <div className="motion-modal rounded-[12px] max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#EAE4D8] bg-[#E6EEE4]/60">
+          <div className="flex items-center gap-2 text-[#33382F] font-semibold text-[15px]">
+            <CheckCircle2 className="w-4 h-4 text-[#62866B]" />
+            <h2>Resolve Blocker</h2>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-[#9CA3AF] hover:text-[#20242B] p-0.5 rounded transition-colors"
+            className="text-[#70786D] hover:text-[#33382F] p-1 rounded-[6px] hover:bg-[#EDE7DA] transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-5 space-y-3.5 text-xs">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 text-[13px]">
           <div>
-            <span className="text-[11px] font-medium text-[#6D7480] block mb-1">Target Task</span>
-            <p className="font-semibold text-[#20242B]">{taskTitle}</p>
+            <span className="text-[11.5px] font-semibold text-[#70786D] block mb-1">Task</span>
+            <p className="font-semibold text-[#33382F] bg-[#F3EFE5] p-2.5 rounded-[9px] border border-[#DED8CB]">
+              {taskTitle}
+            </p>
           </div>
 
           {blockerReason && (
-            <div className="bg-[#FAF8F5] border border-[#EFE9DF] rounded-lg p-2.5 text-xs text-[#78350F] space-y-0.5">
-              <span className="font-semibold block text-[10px] uppercase text-[#92400E]">Obstacle:</span>
-              <p>{blockerReason}</p>
+            <div className="bg-[#F3E7DD] border border-[#DFC2B0] rounded-[9px] p-3 text-[12.5px] text-[#7B4B3A] space-y-1">
+              <span className="font-semibold block text-[11px] uppercase tracking-[0.04em]">
+                Current Blocker
+              </span>
+              <p className="leading-relaxed text-[#33382F]">{blockerReason}</p>
             </div>
           )}
 
           <div>
-            <label htmlFor="resolution-note" className="block font-medium text-[#20242B] mb-1">
-              Resolution Note <span className="text-[#C54D4D]">*</span>
+            <label htmlFor="resolution-note" className="block font-semibold text-[#33382F] mb-1.5">
+              Resolution Note <span className="text-[#985C51]">*</span>
             </label>
             <textarea
               id="resolution-note"
               rows={3}
               value={resolutionNote}
               onChange={(e) => setResolutionNote(e.target.value)}
-              placeholder="e.g. Credentials received and configured in environment variables. Webhook verified."
-              className="w-full text-xs border border-[#E7E9ED] rounded-lg p-2.5 focus:outline-hidden focus:border-[#5965D8] text-[#20242B] placeholder-[#9CA3AF] resize-none"
+              placeholder="e.g. Credentials configured in environment variables and verified."
+              className="w-full text-[13px] motion-input rounded-[9px] p-3 resize-none"
               autoFocus
             />
           </div>
 
-          {error && <div className="p-2.5 text-xs bg-[#FEE2E2] text-[#991B1B] rounded-lg">{error}</div>}
+          {error && (
+            <div className="p-3 text-[12.5px] bg-[#F3E7DD] text-[#985C51] border border-[#DFC2B0] rounded-[9px]">
+              {error}
+            </div>
+          )}
 
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#F4F5F7]">
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#EAE4D8]">
             <button
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="px-3 py-1.5 text-xs text-[#6D7480] hover:text-[#20242B] transition-colors"
+              className="btn-tertiary px-3.5 py-1.5 text-[12.5px] cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="px-3 py-1.5 text-xs bg-[#238565] hover:bg-[#1E7357] text-white font-medium rounded-lg transition-colors cursor-pointer"
+              className="btn-primary px-4 py-2 text-[12.5px] rounded-[9px] cursor-pointer disabled:opacity-50"
             >
               {submitting ? 'Resolving...' : 'Confirm Resolution'}
             </button>

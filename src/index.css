@@ -2,44 +2,171 @@
 
 @layer base {
   :root {
-    --canvas: #f8f9fb;
-    --surface: #ffffff;
-    --sidebar: #f4f5f7;
-    --text-primary: #20242b;
-    --text-secondary: #6d7480;
-    --border-subtle: #e7e9ed;
-    --accent: #5965d8;
-    --accent-soft: #eef0ff;
+    color-scheme: light;
+    --canvas: #F7F4EC;
+    --sidebar: #F1EBDD;
+    --surface: #FFFCF6;
+    --surface-raised: #FFFDF9;
+    --surface-muted: #F3EFE5;
+    --surface-hover: #EDE7DA;
+    --border: #DED8CB;
+    --border-subtle: #EAE4D8;
+    --text-primary: #33382F;
+    --text-secondary: #5D655A;
+    --text-muted: #70786D;
+    --accent: #596D56;
+    --accent-hover: #465A44;
+    --accent-soft: #E3EBDD;
+    --clay: #A46F5C;
+    --clay-soft: #F3E7DD;
+    --sand: #E7D6B2;
+    --success-soft: #E6EEE4;
+    --review-soft: #ECE8F0;
+    --danger: #985C51;
+    --radius-sm: 6px;
+    --radius-md: 9px;
+    --radius-lg: 12px;
+    --shadow-popover: 0 8px 30px rgba(66, 62, 48, 0.08);
   }
 
   body {
-    background-color: #f8f9fb;
-    color: #20242b;
-    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--canvas);
+    color: var(--text-primary);
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 13.5px;
+    line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    min-height: 100vh;
+    overflow-x: hidden;
   }
 
-  /* Monospace tabular figures */
-  .font-mono, [data-tabular-nums="true"] {
-    font-family: 'JetBrains Mono', monospace;
+  /* Tabular numerals for counts and timestamps */
+  [data-tabular-nums="true"] {
     font-variant-numeric: tabular-nums;
   }
 
-  /* Refined minimal scrollbar */
+  /* Accessible focus ring */
+  *:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* Refined warm scrollbar */
   ::-webkit-scrollbar {
-    width: 5px;
-    height: 5px;
+    width: 6px;
+    height: 6px;
   }
   ::-webkit-scrollbar-track {
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: rgba(109, 116, 128, 0.2);
-    border-radius: 9999px;
+    background: #D4CFC2;
+    border-radius: 6px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: rgba(109, 116, 128, 0.4);
+    background: #B8B1A2;
   }
+}
+
+/* MOTION Component Tokens & Surface Classes */
+.motion-surface {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.motion-card {
+  background-color: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  transition: border-color 140ms ease-out, background-color 140ms ease-out;
+}
+
+.motion-card:hover {
+  border-color: var(--border);
+}
+
+.motion-modal {
+  background-color: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-popover);
+  color: var(--text-primary);
+}
+
+.motion-popover {
+  background-color: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-popover);
+  color: var(--text-primary);
+}
+
+.motion-input {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  transition: border-color 140ms ease-out;
+}
+
+.motion-input::placeholder {
+  color: var(--text-muted);
+}
+
+.motion-input:focus {
+  border-color: var(--accent);
+  outline: 2px solid rgba(89, 109, 86, 0.2);
+  outline-offset: 0px;
+}
+
+.btn-primary {
+  background-color: var(--accent);
+  color: #FFFCF6;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 600;
+  transition: background-color 140ms ease-out;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--accent-hover);
+}
+
+.btn-secondary {
+  background-color: var(--surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  transition: background-color 140ms ease-out, border-color 140ms ease-out;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--surface-hover);
+}
+
+.btn-tertiary {
+  background-color: transparent;
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  transition: background-color 140ms ease-out, color 140ms ease-out;
+}
+
+.btn-tertiary:hover:not(:disabled) {
+  background-color: var(--surface-hover);
+  color: var(--text-primary);
 }

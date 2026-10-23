@@ -3,14 +3,13 @@ import { useAuth } from '../../contexts/AuthContext.tsx';
 import { api } from '../../lib/api.ts';
 import type { User } from '../../types/index.ts';
 import { getAvatarColor, getInitials } from '../../lib/utils.ts';
+import { PrismLogo } from '../ui/PrismLogo.tsx';
 import {
   ArrowRight,
   Eye,
   EyeOff,
   AlertCircle,
   FileCheck,
-  AlertTriangle,
-  CheckCircle2,
 } from 'lucide-react';
 
 export function AuthPage() {
@@ -49,105 +48,102 @@ export function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#F8F9FB] flex items-center justify-center p-4 md:p-8 text-[#20242B]">
-      <div className="w-full max-w-5xl bg-white border border-[#E7E9ED] rounded-2xl shadow-xs overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[620px]">
-        {/* Left Editorial Product Story (Desktop) */}
-        <div className="hidden lg:flex lg:col-span-6 bg-[#F4F5F7] border-r border-[#E7E9ED] p-10 flex-col justify-between relative overflow-hidden">
-          {/* Subtle architectural background grid */}
-          <div
-            className="absolute inset-0 opacity-[0.4] pointer-events-none"
-            style={{
-              backgroundImage: 'radial-gradient(#6D7480 0.75px, transparent 0.75px)',
-              backgroundSize: '24px 24px',
-            }}
-          />
-
-          {/* Top Brand Mark */}
-          <div className="relative z-10 space-y-3">
+    <div className="min-h-screen w-full flex items-center justify-center p-4 md:p-8 bg-[#F7F4EC] text-[#33382F]">
+      <div className="w-full max-w-5xl bg-[#FFFCF6] rounded-[12px] border border-[#DED8CB] shadow-sm overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[600px]">
+        {/* Left Modest Product-Story Column (42% / 5 cols on desktop) */}
+        <div className="hidden lg:flex lg:col-span-5 bg-[#F1EBDD] border-r border-[#DED8CB] p-9 flex-col justify-between">
+          {/* Top Brand Mark & Headline */}
+          <div className="space-y-4">
             <div className="flex items-center gap-2.5">
-              <span className="w-7 h-7 rounded-lg bg-[#20242B] text-white font-bold text-xs flex items-center justify-center tracking-tight">
-                M
+              <PrismLogo size="md" />
+              <span className="font-bold text-[16px] tracking-[-0.02em] text-[#33382F]">
+                MOTION
               </span>
-              <span className="font-semibold text-sm tracking-tight text-[#20242B]">MOTION</span>
             </div>
-            <h2 className="text-2xl font-bold text-[#20242B] tracking-tight leading-tight pt-2">
-              A calm workspace for teams who value clarity.
+            <h2 className="text-[26px] font-bold text-[#33382F] tracking-[-0.025em] leading-[1.2]">
+              Calm, tactile project coordination for focused teams.
             </h2>
-            <p className="text-xs text-[#6D7480] leading-relaxed max-w-sm">
-              Know who owns the next action, what is preventing progress, and what was decided—without scheduling another status call.
+            <p className="text-[13.5px] text-[#5D655A] leading-relaxed">
+              See who owns the next step, surface blockers early, and keep architectural decisions attached to the work.
             </p>
           </div>
 
-          {/* Authentic miniature interface representation */}
-          <div className="relative z-10 my-6 bg-white border border-[#E7E9ED] rounded-xl p-4 shadow-xs space-y-3">
-            <div className="flex items-center justify-between pb-2 border-b border-[#F1F3F5] text-xs">
-              <span className="font-semibold text-[#20242B]">Core Platform V2</span>
-              <span className="text-[11px] text-[#6D7480]">4 tasks · 1 blocker</span>
+          {/* Simplified Board Preview Card */}
+          <div className="my-6 bg-[#FFFCF6] rounded-[12px] p-4 border border-[#DED8CB] space-y-3">
+            <div className="flex items-center justify-between pb-2.5 border-b border-[#EAE4D8] text-[12px]">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[#78906F]" />
+                <span className="font-semibold text-[#33382F]">Core Platform V2</span>
+              </div>
+              <span className="text-[11px] text-[#5D655A] bg-[#F3EFE5] px-2 py-0.5 rounded-[6px] border border-[#DED8CB]">
+                In Progress
+              </span>
             </div>
 
-            {/* Blocked task preview */}
-            <div className="bg-[#FAF8F5] border border-[#EFE9DF] rounded-lg p-3 space-y-1.5">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-medium text-[#20242B]">Payment Webhook Handlers</span>
-                <span className="text-[10px] font-semibold text-[#92400E] bg-[#FEF3C7] px-1.5 py-0.5 rounded">
-                  Blocked
+            {/* Blocked task sample */}
+            <div className="bg-[#FFFDF9] border border-[#DED8CB] rounded-[9px] p-3 space-y-2">
+              <div className="flex items-center justify-between text-[11.5px] text-[#70786D]">
+                <span>Due Oct 28</span>
+                <span className="text-[11px] font-semibold text-[#7B4B3A] bg-[#F3E7DD] px-2 py-0.5 rounded-[6px]">
+                  High
                 </span>
               </div>
-              <p className="text-[11px] text-[#78350F] leading-snug">
-                Waiting on Stripe sandbox webhook secret · Rajiv
+              <p className="text-[13px] font-semibold text-[#33382F]">
+                Payment Webhook Handlers
               </p>
+              <div className="text-[11.5px] bg-[#F3E7DD] text-[#7B4B3A] px-2.5 py-1.5 rounded-[6px] border-l-2 border-[#A46F5C]">
+                Blocked · Waiting on Stripe sandbox webhook secret
+              </div>
             </div>
 
-            {/* Decision note preview */}
-            <div className="bg-white border border-[#E7E9ED] rounded-lg p-3 space-y-1">
-              <div className="flex items-center gap-1.5 text-xs font-semibold text-[#20242B]">
-                <FileCheck className="w-3.5 h-3.5 text-[#5965D8]" />
-                <span>Agreed: Self-serve portal for seat upgrades</span>
+            {/* Decision record sample */}
+            <div className="bg-[#F3EFE5] border border-[#DED8CB] rounded-[9px] p-3 space-y-1">
+              <div className="flex items-center gap-1.5 text-[12px] font-semibold text-[#33382F]">
+                <FileCheck className="w-3.5 h-3.5 text-[#596D56]" />
+                <span>Decision: Self-serve seat upgrades</span>
               </div>
-              <p className="text-[11px] text-[#6D7480]">
-                Avoids custom invoicing UI and PCI compliance overhead.
+              <p className="text-[11.5px] text-[#5D655A] leading-snug">
+                Avoids custom invoicing UI and keeps billing state synchronized.
               </p>
             </div>
           </div>
 
-          {/* Bottom subtle quote */}
-          <div className="relative z-10 text-[11px] text-[#6D7480] flex items-center justify-between pt-2 border-t border-[#E7E9ED]">
-            <span>Fast, persistent, real-time collaboration.</span>
-            <span className="font-mono text-[10px]">v2.4</span>
+          {/* Bottom note */}
+          <div className="text-[11.5px] text-[#70786D] flex items-center justify-between pt-2 border-t border-[#DED8CB]">
+            <span>Real-time Kanban, blockers &amp; decisions</span>
+            <span>MOTION</span>
           </div>
         </div>
 
-        {/* Right Authentication Form */}
-        <div className="lg:col-span-6 p-6 sm:p-10 flex flex-col justify-between">
-          <div>
+        {/* Right Form Column (58% / 7 cols on desktop) */}
+        <div className="lg:col-span-7 p-6 sm:p-10 flex flex-col justify-center bg-[#FFFCF6]">
+          <div className="w-full max-w-[400px] mx-auto space-y-6">
             {/* Mobile Brand Mark */}
-            <div className="lg:hidden flex items-center gap-2 mb-6">
-              <span className="w-7 h-7 rounded-lg bg-[#20242B] text-white font-bold text-xs flex items-center justify-center">
-                M
-              </span>
-              <span className="font-semibold text-sm tracking-tight text-[#20242B]">MOTION</span>
+            <div className="lg:hidden flex items-center gap-2.5">
+              <PrismLogo size="sm" />
+              <span className="font-bold text-[15px] tracking-[-0.02em] text-[#33382F]">MOTION</span>
             </div>
 
             {/* Heading */}
             <div className="space-y-1">
-              <h1 className="text-xl font-bold tracking-tight text-[#20242B]">
-                {isRegister ? 'Create your account' : 'Welcome back'}
+              <h1 className="text-[24px] font-bold tracking-[-0.02em] text-[#33382F]">
+                {isRegister ? 'Create your workspace account' : 'Sign in to MOTION'}
               </h1>
-              <p className="text-xs text-[#6D7480]">
+              <p className="text-[13.5px] text-[#5D655A]">
                 {isRegister
-                  ? 'Start organizing work with your team in minutes.'
-                  : 'Sign in to continue your team’s work.'}
+                  ? 'Start organizing projects and tasks with your team.'
+                  : 'Enter your credentials or choose a demo teammate below.'}
               </p>
             </div>
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="mt-6 space-y-3.5">
+            <form onSubmit={handleSubmit} className="space-y-4">
               {isRegister && (
                 <>
                   <div>
                     <label
                       htmlFor="auth-name"
-                      className="block text-xs font-medium text-[#20242B] mb-1"
+                      className="block text-[12.5px] font-semibold text-[#33382F] mb-1.5"
                     >
                       Full name
                     </label>
@@ -158,7 +154,7 @@ export function AuthPage() {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="e.g. Alex Rivera"
-                      className="w-full text-xs bg-[#F8F9FB] border border-[#E7E9ED] rounded-lg px-3 py-2 text-[#20242B] placeholder-[#9CA3AF] focus:bg-white focus:outline-hidden focus:border-[#5965D8] transition-colors"
+                      className="w-full text-[13.5px] motion-input rounded-[9px] px-3.5 py-2"
                       required
                     />
                   </div>
@@ -166,9 +162,9 @@ export function AuthPage() {
                   <div>
                     <label
                       htmlFor="auth-workspace"
-                      className="block text-xs font-medium text-[#20242B] mb-1"
+                      className="block text-[12.5px] font-semibold text-[#33382F] mb-1.5"
                     >
-                      Workspace name <span className="text-[#9CA3AF] font-normal">(Optional)</span>
+                      Workspace name <span className="text-[#70786D] font-normal">(Optional)</span>
                     </label>
                     <input
                       id="auth-workspace"
@@ -176,7 +172,7 @@ export function AuthPage() {
                       value={workspaceName}
                       onChange={(e) => setWorkspaceName(e.target.value)}
                       placeholder="e.g. Acme Studio"
-                      className="w-full text-xs bg-[#F8F9FB] border border-[#E7E9ED] rounded-lg px-3 py-2 text-[#20242B] placeholder-[#9CA3AF] focus:bg-white focus:outline-hidden focus:border-[#5965D8] transition-colors"
+                      className="w-full text-[13.5px] motion-input rounded-[9px] px-3.5 py-2"
                     />
                   </div>
                 </>
@@ -185,7 +181,7 @@ export function AuthPage() {
               <div>
                 <label
                   htmlFor="auth-email"
-                  className="block text-xs font-medium text-[#20242B] mb-1"
+                  className="block text-[12.5px] font-semibold text-[#33382F] mb-1.5"
                 >
                   Email address
                 </label>
@@ -196,7 +192,7 @@ export function AuthPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@company.com"
-                  className="w-full text-xs bg-[#F8F9FB] border border-[#E7E9ED] rounded-lg px-3 py-2 text-[#20242B] placeholder-[#9CA3AF] focus:bg-white focus:outline-hidden focus:border-[#5965D8] transition-colors"
+                  className="w-full text-[13.5px] motion-input rounded-[9px] px-3.5 py-2"
                   required
                 />
               </div>
@@ -204,7 +200,7 @@ export function AuthPage() {
               <div>
                 <label
                   htmlFor="auth-password"
-                  className="block text-xs font-medium text-[#20242B] mb-1"
+                  className="block text-[12.5px] font-semibold text-[#33382F] mb-1.5"
                 >
                   Password
                 </label>
@@ -216,23 +212,23 @@ export function AuthPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full text-xs bg-[#F8F9FB] border border-[#E7E9ED] rounded-lg pl-3 pr-8 py-2 text-[#20242B] placeholder-[#9CA3AF] focus:bg-white focus:outline-hidden focus:border-[#5965D8] transition-colors"
+                    className="w-full text-[13.5px] motion-input rounded-[9px] pl-3.5 pr-10 py-2"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword((p) => !p)}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#9CA3AF] hover:text-[#6D7480] transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#70786D] hover:text-[#33382F] transition-colors cursor-pointer"
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
-                    {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
 
               {error && (
-                <div className="p-2.5 text-xs bg-[#FEE2E2] text-[#991B1B] border border-[#FECACA] rounded-lg flex items-start gap-2">
-                  <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                <div className="p-3 text-[12.5px] bg-[#F3E7DD] text-[#985C51] border border-[#DFC2B0] rounded-[9px] flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-[#985C51]" />
                   <span>{error}</span>
                 </div>
               )}
@@ -240,64 +236,64 @@ export function AuthPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full mt-2 py-2 text-xs font-semibold bg-[#20242B] hover:bg-[#323842] disabled:opacity-50 text-white rounded-lg shadow-2xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                className="w-full py-2.5 text-[13px] font-semibold btn-primary rounded-[9px] disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>{loading ? 'Please wait...' : isRegister ? 'Create account' : 'Sign in'}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </form>
 
-            <div className="mt-4 text-center">
+            <div className="text-center">
               <button
                 type="button"
                 onClick={() => {
                   setIsRegister((r) => !r);
                   setError(null);
                 }}
-                className="text-xs text-[#6D7480] hover:text-[#20242B] transition-colors"
+                className="text-[12.5px] text-[#5D655A] hover:text-[#33382F] font-medium transition-colors cursor-pointer"
               >
                 {isRegister
                   ? 'Already have an account? Sign in'
                   : "Don't have an account? Create one"}
               </button>
             </div>
-          </div>
 
-          {/* Quick Teammate Access (Refined, calm, unobtrusive) */}
-          {demoUsers.length > 0 && (
-            <div className="pt-6 mt-6 border-t border-[#E7E9ED]">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] font-medium text-[#6D7480]">
-                  Quick test as teammate:
-                </span>
-                <span className="text-[10px] text-[#6D7480]">Click to sign in</span>
-              </div>
-              <div className="grid grid-cols-2 gap-1.5">
-                {demoUsers.slice(0, 4).map((u) => (
-                  <button
-                    type="button"
-                    key={u.id}
-                    onClick={() => switchUserFast(u)}
-                    className="p-1.5 px-2 bg-[#F8F9FB] hover:bg-[#F1F3F5] border border-[#E7E9ED] rounded-lg text-left transition-colors flex items-center gap-2 group cursor-pointer"
-                  >
-                    <span
-                      className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-semibold shrink-0 ${getAvatarColor(
-                        u.name
-                      )}`}
+            {/* Quick Demo Account Switcher */}
+            {demoUsers.length > 0 && (
+              <div className="pt-5 border-t border-[#EAE4D8] space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11.5px] font-semibold text-[#70786D]">
+                    Quick demo account switch
+                  </span>
+                  <span className="text-[11px] text-[#596D56] font-medium">1-click sign in</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {demoUsers.slice(0, 4).map((u) => (
+                    <button
+                      type="button"
+                      key={u.id}
+                      onClick={() => switchUserFast(u)}
+                      className="p-2 bg-[#F3EFE5] hover:bg-[#EDE7DA] border border-[#DED8CB] rounded-[9px] text-left transition-colors flex items-center gap-2 group cursor-pointer"
                     >
-                      {getInitials(u.name)}
-                    </span>
-                    <div className="min-w-0">
-                      <p className="text-[11px] font-medium text-[#20242B] truncate leading-tight">
-                        {u.name}
-                      </p>
-                      <p className="text-[9px] text-[#6D7480] truncate leading-tight">{u.title}</p>
-                    </div>
-                  </button>
-                ))}
+                      <span
+                        className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${getAvatarColor(
+                          u.name
+                        )}`}
+                      >
+                        {getInitials(u.name)}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-[12px] font-semibold text-[#33382F] truncate leading-tight">
+                          {u.name}
+                        </p>
+                        <p className="text-[10.5px] text-[#70786D] truncate leading-tight">{u.title}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </div>

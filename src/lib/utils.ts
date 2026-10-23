@@ -18,20 +18,55 @@ export function getInitials(name: string): string {
 }
 
 export function getAvatarColor(name: string): string {
-  // Sophisticated, calm, muted palette matching design tokens
+  // Warm, muted tactile palette matching design.md tokens
   const colors = [
-    'bg-[#EBECEF] text-[#20242B]',
-    'bg-[#E5E7EB] text-[#374151]',
-    'bg-[#EEF0FF] text-[#434DB7]',
-    'bg-[#F1F3F5] text-[#495057]',
-    'bg-[#E8F0FE] text-[#1967D2]',
-    'bg-[#E6F4EA] text-[#137333]',
+    'bg-[#E3EBDD] text-[#33382F] border border-[#CAD7C2]',
+    'bg-[#F1E9DB] text-[#5C4B35] border border-[#E0D3BC]',
+    'bg-[#F3E7DD] text-[#6E4435] border border-[#E4CFC0]',
+    'bg-[#ECE8F0] text-[#4E4357] border border-[#D8D1DF]',
+    'bg-[#E6EEE4] text-[#364B3A] border border-[#CADBC7]',
+    'bg-[#EDE7DA] text-[#33382F] border border-[#DED8CB]',
   ];
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
     hash = name.charCodeAt(i) + ((hash << 5) - hash);
   }
   return colors[Math.abs(hash) % colors.length];
+}
+
+export function getColumnSemanticStyle(columnName: string): {
+  dotColor: string;
+  chipBg: string;
+  chipText: string;
+} {
+  const lower = (columnName || '').toLowerCase();
+  if (lower.includes('done') || lower.includes('complete')) {
+    return {
+      dotColor: '#62866B',
+      chipBg: '#E7F0E5',
+      chipText: '#334C39',
+    };
+  }
+  if (lower.includes('review') || lower.includes('qa')) {
+    return {
+      dotColor: '#95839D',
+      chipBg: '#F0EBF1',
+      chipText: '#514358',
+    };
+  }
+  if (lower.includes('progress') || lower.includes('doing') || lower.includes('active')) {
+    return {
+      dotColor: '#78906F',
+      chipBg: '#E9EFE4',
+      chipText: '#3E4F38',
+    };
+  }
+  // Default: To Do / Backlog
+  return {
+    dotColor: '#B9A27C',
+    chipBg: '#F1E9DB',
+    chipText: '#5E4D33',
+  };
 }
 
 export function formatDate(dateString?: string | null): string {

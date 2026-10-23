@@ -5,6 +5,7 @@ import { RealtimeProvider } from './contexts/RealtimeContext.tsx';
 import { SearchProvider } from './contexts/SearchContext.tsx';
 import { AuthPage } from './components/auth/AuthPage.tsx';
 import { AppLayout } from './components/layout/AppLayout.tsx';
+import { PrismLogo } from './components/ui/PrismLogo.tsx';
 import { api } from './lib/api.ts';
 
 function MainContent() {
@@ -27,12 +28,10 @@ function MainContent() {
 
   if (loading) {
     return (
-      <div className="h-screen w-screen flex items-center justify-center bg-stone-50 text-stone-400 text-sm">
+      <div className="h-screen w-screen flex items-center justify-center bg-[#F7F4EC] text-[#5D655A] text-[13.5px]">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-stone-900 text-white font-black flex items-center justify-center animate-pulse">
-            M
-          </div>
-          <span>Loading MOTION...</span>
+          <PrismLogo size="md" />
+          <span className="font-medium">Loading MOTION...</span>
         </div>
       </div>
     );

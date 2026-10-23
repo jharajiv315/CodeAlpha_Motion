@@ -7,6 +7,8 @@ import { useSearch } from '../../contexts/SearchContext.tsx';
 import { KanbanColumn } from './KanbanColumn.tsx';
 import { TaskDetailModal } from '../task/TaskDetailModal.tsx';
 import { CreateTaskModal } from '../task/CreateTaskModal.tsx';
+import { TimelineGanttView } from './TimelineGanttView.tsx';
+import { ArchiveDrawer } from './ArchiveDrawer.tsx';
 import {
   DndContext,
   DragOverlay,
@@ -29,9 +31,27 @@ import {
   Search,
   AlertTriangle,
   RotateCcw,
+  Kanban,
+  Rows,
+  Calendar,
+  Archive,
+  ChevronDown,
+  ChevronRight,
+  Flag,
+  Users,
+  FileCheck,
 } from 'lucide-react';
+import { getAvatarColor, getInitials } from '../../lib/utils.ts';
 
-export function KanbanBoard() {
+type ViewMode = 'board' | 'swimlanes' | 'timeline';
+type SwimlaneGroupBy = 'assignee' | 'priority';
+
+interface KanbanBoardProps {
+  onNavigateTab?: (tab: 'board' | 'blockers' | 'decisions' | 'mywork') => void;
+  onOpenInvite?: () => void;
+}
+
+export function KanbanBoard({ onNavigateTab, onOpenInvite }: KanbanBoardProps) {
   const { currentProject, workspaceMembers } = useWorkspace();
   const { refreshKey } = useRealtime();
   const {
@@ -52,7 +72,12 @@ export function KanbanBoard() {
   const [loading, setLoading] = useState(false);
   const [activeDragTask, setActiveDragTask] = useState<Task | null>(null);
 
-  // Modals
+  const [viewMode, setViewMode] = useState<ViewMode>('board');
+  const [swimlaneGroupBy, setSwimlaneGroupBy] = useState<SwimlaneGroupBy>('assignee');
+  const [collapsedSwimlanes, setCollapsedSwimlanes] = useState<Record<string, boolean>>({});
+
+  const [isArchiveOpen, setIsArchiveOpen] = useState(false);
+
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -90,10 +115,8 @@ export function KanbanBoard() {
     loadBoardData();
   }, [loadBoardData, refreshKey]);
 
-  // Filter tasks across all columns by keyword, assignee, or priority
   const filteredTasks = useMemo(() => {
     return tasks.filter((t) => {
-      // 1. Keyword search (matches title, description, assignee name, priority label, or blocker details)
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
         const matchesTitle = t.title.toLowerCase().includes(q);
@@ -121,7 +144,6 @@ export function KanbanBoard() {
         }
       }
 
-      // 2. Specific Assignee filter
       if (selectedAssignee !== 'all') {
         const hasAssignee = t.assignees?.some(
           (a) => a.user_id === selectedAssignee
@@ -129,7 +151,6 @@ export function KanbanBoard() {
         if (!hasAssignee) return false;
       }
 
-      // 3. Specific Priority filter
       if (selectedPriority !== 'all') {
         const normPriority = (t.priority || 'MEDIUM').toUpperCase();
         if (normPriority !== selectedPriority) {
@@ -137,7 +158,6 @@ export function KanbanBoard() {
         }
       }
 
-      // 4. Blocked only filter
       if (onlyBlocked && !t.is_blocked) {
         return false;
       }
@@ -145,6 +165,79 @@ export function KanbanBoard() {
       return true;
     });
   }, [tasks, searchQuery, selectedAssignee, selectedPriority, onlyBlocked]);
+
+  // Real project completion & blocker counts
+  const projectStats = useMemo(() => {
+    const total = tasks.length;
+    const doneColIds = columns
+      .filter((c) => c.name.toLowerCase().includes('done'))
+      .map((c) => c.id);
+    const completed = tasks.filter(
+      (t) => !!t.completed_at || doneColIds.includes(t.column_id)
+    ).length;
+    const blocked = tasks.filter((t) => t.is_blocked).length;
+    const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+    return { total, completed, blocked, pct };
+  }, [tasks, columns]);
+
+  interface SwimlaneGroup {
+    id: string;
+    title: string;
+    subtitle?: string;
+    avatarName?: string;
+    tasks: Task[];
+  }
+
+  const swimlanes = useMemo<SwimlaneGroup[]>(() => {
+    if (viewMode !== 'swimlanes') return [];
+
+    if (swimlaneGroupBy === 'assignee') {
+      const groups: SwimlaneGroup[] = [];
+
+      workspaceMembers.forEach((member) => {
+        const memberTasks = filteredTasks.filter((t) =>
+          t.assignees.some((a) => a.user_id === member.user_id)
+        );
+        groups.push({
+          id: member.user_id,
+          title: member.name,
+          subtitle: member.title || member.role.toLowerCase(),
+          avatarName: member.name,
+          tasks: memberTasks,
+        });
+      });
+
+      const unassignedTasks = filteredTasks.filter((t) => !t.assignees || t.assignees.length === 0);
+      if (unassignedTasks.length > 0) {
+        groups.push({
+          id: 'unassigned',
+          title: 'Unassigned',
+          subtitle: 'Tasks without owners',
+          tasks: unassignedTasks,
+        });
+      }
+
+      return groups;
+    } else {
+      const priorities: ('HIGH' | 'MEDIUM' | 'LOW')[] = ['HIGH', 'MEDIUM', 'LOW'];
+      return priorities.map((p) => {
+        const pTasks = filteredTasks.filter((t) => (t.priority || 'MEDIUM').toUpperCase() === p);
+        return {
+          id: p,
+          title: `${p.charAt(0) + p.slice(1).toLowerCase()} Priority`,
+          subtitle: `${pTasks.length} tasks`,
+          tasks: pTasks,
+        };
+      });
+    }
+  }, [viewMode, swimlaneGroupBy, filteredTasks, workspaceMembers]);
+
+  const toggleSwimlaneCollapse = (swimlaneId: string) => {
+    setCollapsedSwimlanes((prev) => ({
+      ...prev,
+      [swimlaneId]: !prev[swimlaneId],
+    }));
+  };
 
   const handleOpenDetail = (taskId: string) => {
     setSelectedTaskId(taskId);
@@ -159,7 +252,6 @@ export function KanbanBoard() {
   const handleMoveToColumn = async (taskId: string, targetColId: string) => {
     if (!currentProject) return;
     const originalTasks = [...tasks];
-    // Optimistic update
     setTasks((prev) =>
       prev.map((t) => (t.id === taskId ? { ...t, column_id: targetColId } : t))
     );
@@ -196,7 +288,6 @@ export function KanbanBoard() {
 
     if (!targetColId) return;
 
-    // Moving between columns during hover
     if (activeTask.column_id !== targetColId) {
       setTasks((prev) => {
         const activeIndex = prev.findIndex((t) => t.id === activeId);
@@ -231,7 +322,6 @@ export function KanbanBoard() {
 
     if (!targetColId) return;
 
-    // Get ordered tasks in target column
     const colTasks = tasks.filter((t) => t.column_id === targetColId);
     const oldIndex = colTasks.findIndex((t) => t.id === activeId);
     let newIndex = overTask ? colTasks.findIndex((t) => t.id === overId) : colTasks.length - 1;
@@ -244,7 +334,6 @@ export function KanbanBoard() {
 
     const reorderedTaskIds = reorderedColTasks.map((t) => t.id);
 
-    // Optimistically update positions in local state
     setTasks((prev) => {
       const otherColTasks = prev.filter((t) => t.column_id !== targetColId && t.id !== activeId);
       return [...otherColTasks, ...reorderedColTasks];
@@ -260,121 +349,305 @@ export function KanbanBoard() {
 
   if (!currentProject) {
     return (
-      <div className="flex-1 flex items-center justify-center p-8 text-[#6D7480] text-xs">
+      <div className="flex-1 flex items-center justify-center p-8 text-[#70786D] text-[13.5px]">
         Select a project from the sidebar to view its board.
       </div>
     );
   }
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#F8F9FB]">
-      {/* Quiet Board Toolbar */}
-      <div className="px-6 py-2.5 bg-white border-b border-[#E7E9ED] flex flex-wrap items-center justify-between gap-3 shrink-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* Search */}
-          <div className="relative">
-            <Search className="w-3.5 h-3.5 text-[#9CA3AF] absolute left-2.5 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Filter tasks..."
-              className="text-xs bg-[#F8F9FB] border border-[#E7E9ED] rounded-lg pl-8 pr-2.5 py-1 text-[#20242B] placeholder-[#9CA3AF] focus:bg-white focus:outline-hidden focus:border-[#5965D8] w-40 transition-colors"
-            />
+    <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#F7F4EC]">
+      {/* Project Context Header (Pickolab reference-inspired) */}
+      <div className="px-6 md:px-8 pt-5 pb-0 border-b border-[#DED8CB] bg-[#F7F4EC] shrink-0">
+        {/* 1. Breadcrumb */}
+        <div className="flex items-center gap-1.5 text-[12px] text-[#70786D] mb-2">
+          <span>Projects</span>
+          <span aria-hidden="true">/</span>
+          <span className="text-[#33382F] font-medium">{currentProject.name}</span>
+        </div>
+
+        {/* 2. Project Title, Status Chip, and Contextual Actions */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="space-y-1 min-w-0">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <h1 className="text-[26px] sm:text-[28px] font-bold text-[#33382F] leading-[1.2] tracking-tight">
+                {currentProject.name}
+              </h1>
+              {projectStats.blocked > 0 ? (
+                <button
+                  type="button"
+                  onClick={() => onNavigateTab?.('blockers')}
+                  className="inline-flex items-center gap-1.5 text-[12px] font-medium px-2.5 py-0.5 rounded-[6px] bg-[#F3E7DD] text-[#A46F5C] hover:bg-[#EBDDD0] transition-colors cursor-pointer"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#A46F5C]" />
+                  <span>{projectStats.blocked} Blocked</span>
+                </button>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 text-[12px] font-medium px-2.5 py-0.5 rounded-[6px] bg-[#E3EBDD] text-[#465A44]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#596D56]" />
+                  <span>Active</span>
+                </span>
+              )}
+            </div>
+            {currentProject.description && (
+              <p className="text-[13.5px] text-[#5D655A] line-clamp-2 max-w-2xl">
+                {currentProject.description}
+              </p>
+            )}
           </div>
 
-          {/* Assignee Filter */}
-          <select
-            value={selectedAssignee}
-            onChange={(e) => setSelectedAssignee(e.target.value)}
-            className="text-xs bg-[#F8F9FB] border border-[#E7E9ED] rounded-lg px-2.5 py-1 text-[#6D7480] hover:text-[#20242B] transition-colors cursor-pointer"
-          >
-            <option value="all">Assignee: All</option>
-            {workspaceMembers.map((m) => (
-              <option key={m.user_id} value={m.user_id}>
-                {m.name}
-              </option>
-            ))}
-          </select>
+          <div className="flex items-center gap-2 shrink-0">
+            {onOpenInvite && (
+              <button
+                type="button"
+                onClick={onOpenInvite}
+                className="px-3 py-2 btn-secondary flex items-center gap-1.5 cursor-pointer"
+              >
+                <Users className="w-3.5 h-3.5 text-[#5D655A]" />
+                <span>Invite</span>
+              </button>
+            )}
 
-          {/* Priority Filter */}
-          <select
-            value={selectedPriority}
-            onChange={(e) => setSelectedPriority(e.target.value)}
-            className="text-xs bg-[#F8F9FB] border border-[#E7E9ED] rounded-lg px-2.5 py-1 text-[#6D7480] hover:text-[#20242B] transition-colors cursor-pointer"
-          >
-            <option value="all">Priority: All</option>
-            <option value="HIGH">High Priority</option>
-            <option value="MEDIUM">Medium Priority</option>
-            <option value="LOW">Low Priority</option>
-          </select>
-
-          {/* Blocker Filter Toggle */}
-          <button
-            type="button"
-            onClick={() => setOnlyBlocked((prev) => !prev)}
-            className={`text-xs px-2.5 py-1 rounded-lg border transition-colors flex items-center gap-1 font-medium cursor-pointer ${
-              onlyBlocked
-                ? 'bg-[#FEF3C7] text-[#92400E] border-[#FDE68A]'
-                : 'bg-[#F8F9FB] text-[#6D7480] border-[#E7E9ED] hover:text-[#20242B]'
-            }`}
-          >
-            <AlertTriangle className="w-3 h-3 text-[#B97828]" />
-            <span>Blocked</span>
-          </button>
-
-          {hasActiveFilters && (
             <button
               type="button"
-              onClick={resetFilters}
-              className="text-xs text-[#6D7480] hover:text-[#20242B] p-1 flex items-center gap-1 cursor-pointer"
-              title="Reset all filters"
+              onClick={() => setIsArchiveOpen(true)}
+              className="px-3 py-2 btn-secondary flex items-center gap-1.5 cursor-pointer"
+              title="View or restore archived completed tasks"
             >
-              <RotateCcw className="w-3 h-3" />
-              <span>Reset</span>
+              <Archive className="w-3.5 h-3.5 text-[#5D655A]" />
+              <span>Archive</span>
             </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setTargetColumnForCreate(columns[0]?.id);
+                setIsCreateModalOpen(true);
+              }}
+              className="px-3.5 py-2 btn-primary flex items-center gap-1.5 cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Add task</span>
+            </button>
+          </div>
+        </div>
+
+        {/* 3. Compact Metadata Row: Team Members & Task Progress */}
+        <div className="flex flex-wrap items-center gap-6 mt-3.5 pb-3.5 text-[12px] text-[#5D655A]">
+          {/* Members overlapping stack */}
+          {workspaceMembers.length > 0 && (
+            <div className="flex items-center gap-2">
+              <span className="text-[#70786D]">Members</span>
+              <div className="flex items-center -space-x-1.5">
+                {workspaceMembers.slice(0, 6).map((m) => (
+                  <span
+                    key={m.user_id}
+                    className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-semibold ring-2 ring-[#F7F4EC] ${getAvatarColor(
+                      m.name
+                    )}`}
+                    title={`${m.name} (${m.role.toLowerCase()})`}
+                  >
+                    {getInitials(m.name)}
+                  </span>
+                ))}
+                {workspaceMembers.length > 6 && (
+                  <span className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-semibold bg-[#EDE7DA] text-[#33382F] ring-2 ring-[#F7F4EC]">
+                    +{workspaceMembers.length - 6}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Task completion progress track (only when real tasks exist) */}
+          {projectStats.total > 0 && (
+            <div className="flex items-center gap-2.5">
+              <span className="text-[#70786D]">Progress</span>
+              <div className="w-24 h-1.5 bg-[#EAE4D8] rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-[#596D56] rounded-full transition-all duration-200"
+                  style={{ width: `${projectStats.pct}%` }}
+                />
+              </div>
+              <span className="text-[#33382F] font-medium" data-tabular-nums="true">
+                {projectStats.completed}/{projectStats.total} completed
+              </span>
+            </div>
           )}
         </div>
 
-        {/* Add Task */}
-        <button
-          type="button"
-          onClick={() => {
-            setTargetColumnForCreate(columns[0]?.id);
-            setIsCreateModalOpen(true);
-          }}
-          className="text-xs font-semibold bg-[#20242B] hover:bg-[#323842] text-white px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
-        >
-          <Plus className="w-3.5 h-3.5" />
-          <span>New Task</span>
-        </button>
+        {/* 4. View Switcher Tabs & Local Filter Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-1 border-t border-[#EAE4D8]">
+          {/* View Tabs */}
+          <div className="flex items-center gap-1 -mb-px">
+            <button
+              type="button"
+              onClick={() => setViewMode('board')}
+              className={`flex items-center gap-1.5 px-3 py-2.5 text-[13px] border-b-2 transition-colors cursor-pointer ${
+                viewMode === 'board'
+                  ? 'border-[#596D56] text-[#33382F] font-semibold'
+                  : 'border-transparent text-[#5D655A] hover:text-[#33382F]'
+              }`}
+            >
+              <Kanban className="w-3.5 h-3.5" />
+              <span>Board</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('swimlanes')}
+              className={`flex items-center gap-1.5 px-3 py-2.5 text-[13px] border-b-2 transition-colors cursor-pointer ${
+                viewMode === 'swimlanes'
+                  ? 'border-[#596D56] text-[#33382F] font-semibold'
+                  : 'border-transparent text-[#5D655A] hover:text-[#33382F]'
+              }`}
+            >
+              <Rows className="w-3.5 h-3.5" />
+              <span>Swimlanes</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('timeline')}
+              className={`flex items-center gap-1.5 px-3 py-2.5 text-[13px] border-b-2 transition-colors cursor-pointer ${
+                viewMode === 'timeline'
+                  ? 'border-[#596D56] text-[#33382F] font-semibold'
+                  : 'border-transparent text-[#5D655A] hover:text-[#33382F]'
+              }`}
+            >
+              <Calendar className="w-3.5 h-3.5" />
+              <span>Timeline</span>
+            </button>
+
+            {onNavigateTab && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => onNavigateTab('blockers')}
+                  className="flex items-center gap-1.5 px-3 py-2.5 text-[13px] border-b-2 border-transparent text-[#5D655A] hover:text-[#33382F] transition-colors cursor-pointer"
+                >
+                  <AlertTriangle className="w-3.5 h-3.5 text-[#A46F5C]" />
+                  <span>Blockers</span>
+                  {projectStats.blocked > 0 && (
+                    <span className="text-[11px] px-1.5 py-0.2 rounded-[4px] bg-[#F3E7DD] text-[#A46F5C] font-semibold" data-tabular-nums="true">
+                      {projectStats.blocked}
+                    </span>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onNavigateTab('decisions')}
+                  className="flex items-center gap-1.5 px-3 py-2.5 text-[13px] border-b-2 border-transparent text-[#5D655A] hover:text-[#33382F] transition-colors cursor-pointer"
+                >
+                  <FileCheck className="w-3.5 h-3.5 text-[#596D56]" />
+                  <span>Decisions</span>
+                </button>
+              </>
+            )}
+          </div>
+
+          {/* Local Filter Controls */}
+          <div className="flex items-center gap-2 py-1.5 flex-wrap">
+            {viewMode === 'swimlanes' && (
+              <div className="flex items-center gap-1.5 text-[12px]">
+                <span className="text-[#70786D] font-medium">Group by:</span>
+                <select
+                  value={swimlaneGroupBy}
+                  onChange={(e) => setSwimlaneGroupBy(e.target.value as SwimlaneGroupBy)}
+                  className="motion-input px-2 py-1 text-[12px] font-medium cursor-pointer"
+                >
+                  <option value="assignee">Team Member</option>
+                  <option value="priority">Priority</option>
+                </select>
+              </div>
+            )}
+
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 text-[#70786D] absolute left-2.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Filter tasks..."
+                className="text-[12.5px] motion-input pl-8 pr-2.5 py-1 w-36 focus:w-48 transition-all"
+              />
+            </div>
+
+            <select
+              value={selectedAssignee}
+              onChange={(e) => setSelectedAssignee(e.target.value)}
+              className="text-[12.5px] motion-input px-2.5 py-1 cursor-pointer"
+            >
+              <option value="all">Assignee: All</option>
+              {workspaceMembers.map((m) => (
+                <option key={m.user_id} value={m.user_id}>
+                  {m.name}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={selectedPriority}
+              onChange={(e) => setSelectedPriority(e.target.value)}
+              className="text-[12.5px] motion-input px-2.5 py-1 cursor-pointer"
+            >
+              <option value="all">Priority: All</option>
+              <option value="HIGH">High</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="LOW">Low</option>
+            </select>
+
+            <button
+              type="button"
+              onClick={() => setOnlyBlocked((prev) => !prev)}
+              className={`text-[12.5px] px-2.5 py-1 rounded-[6px] border transition-colors flex items-center gap-1.5 font-medium cursor-pointer ${
+                onlyBlocked
+                  ? 'bg-[#F3E7DD] text-[#A46F5C] border-[#DFC7B8]'
+                  : 'bg-[#FFFCF6] text-[#5D655A] border-[#DED8CB] hover:bg-[#EDE7DA]'
+              }`}
+            >
+              <AlertTriangle className="w-3.5 h-3.5 text-[#A46F5C]" />
+              <span>Blocked</span>
+            </button>
+
+            {hasActiveFilters && (
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="text-[12px] text-[#985C51] hover:underline px-1.5 py-1 flex items-center gap-1 cursor-pointer font-medium"
+                title="Reset all filters"
+              >
+                <RotateCcw className="w-3 h-3" />
+                <span>Reset</span>
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
-      {/* Active Filter Notice Banner across all columns */}
+      {/* Active Filter Notice */}
       {hasActiveFilters && (
-        <div className="px-6 py-1.5 bg-[#EEF0FF] border-b border-[#DDE1FF] flex items-center justify-between text-xs text-[#434DB7] shrink-0">
+        <div className="px-6 md:px-8 py-2 bg-[#F3EFE5] border-b border-[#DED8CB] flex items-center justify-between text-[12px] text-[#5D655A] shrink-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-medium">
-              Filtered across all columns: <strong className="text-[#20242B]">{filteredTasks.length}</strong> of{' '}
-              <strong className="text-[#20242B]">{tasks.length}</strong> tasks visible
+            <span>
+              Showing <strong className="text-[#33382F]">{filteredTasks.length}</strong> of{' '}
+              <strong className="text-[#33382F]">{tasks.length}</strong> tasks
             </span>
             {searchQuery && (
-              <span className="bg-white px-1.5 py-0.5 rounded text-[11px] border border-[#CBD2FB] text-[#20242B]">
-                Keyword: &quot;{searchQuery}&quot;
+              <span className="bg-[#FFFCF6] px-2 py-0.5 rounded-[5px] border border-[#DED8CB] text-[#33382F] font-medium">
+                &ldquo;{searchQuery}&rdquo;
               </span>
             )}
             {selectedPriority !== 'all' && (
-              <span className="bg-white px-1.5 py-0.5 rounded text-[11px] border border-[#CBD2FB] text-[#20242B]">
+              <span className="bg-[#FFFCF6] px-2 py-0.5 rounded-[5px] border border-[#DED8CB] text-[#33382F] font-medium">
                 Priority: {selectedPriority}
               </span>
             )}
             {selectedAssignee !== 'all' && (
-              <span className="bg-white px-1.5 py-0.5 rounded text-[11px] border border-[#CBD2FB] text-[#20242B]">
+              <span className="bg-[#FFFCF6] px-2 py-0.5 rounded-[5px] border border-[#DED8CB] text-[#33382F] font-medium">
                 Assignee: {workspaceMembers.find((m) => m.user_id === selectedAssignee)?.name || selectedAssignee}
               </span>
             )}
             {onlyBlocked && (
-              <span className="bg-[#FEF3C7] text-[#92400E] px-1.5 py-0.5 rounded text-[11px] border border-[#FDE68A]">
+              <span className="bg-[#F3E7DD] text-[#A46F5C] px-2 py-0.5 rounded-[5px] font-medium">
                 Blocked only
               </span>
             )}
@@ -383,7 +656,7 @@ export function KanbanBoard() {
           <button
             type="button"
             onClick={resetFilters}
-            className="text-[11px] font-semibold text-[#434DB7] hover:underline flex items-center gap-1 cursor-pointer shrink-0 ml-2"
+            className="text-[12px] font-medium text-[#596D56] hover:underline flex items-center gap-1 cursor-pointer shrink-0 ml-2"
           >
             <RotateCcw className="w-3 h-3" />
             <span>Clear filters</span>
@@ -391,48 +664,186 @@ export function KanbanBoard() {
         </div>
       )}
 
-      {/* Kanban Board Track with Drag & Drop */}
-      <div className="flex-1 overflow-x-auto overflow-y-hidden p-4 md:p-6">
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCorners}
-          onDragStart={handleDragStart}
-          onDragOver={handleDragOver}
-          onDragEnd={handleDragEnd}
-        >
-          <div className="flex items-start gap-3.5 h-full min-w-max pb-2">
-            {columns.map((col) => {
-              const colTasks = filteredTasks.filter((t) => t.column_id === col.id);
+      {/* Main Content Area based on View Mode */}
+      {viewMode === 'timeline' ? (
+        <TimelineGanttView
+          tasks={filteredTasks}
+          columns={columns}
+          onOpenDetail={handleOpenDetail}
+        />
+      ) : viewMode === 'swimlanes' ? (
+        <div className="flex-1 overflow-y-auto px-6 md:px-8 py-5 space-y-5">
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCorners}
+            onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
+            onDragEnd={handleDragEnd}
+          >
+            {swimlanes.map((lane) => {
+              const isCollapsed = !!collapsedSwimlanes[lane.id];
               return (
-                <KanbanColumn
-                  key={col.id}
-                  column={col}
-                  tasks={colTasks}
-                  allColumns={columns}
-                  onOpenDetail={handleOpenDetail}
-                  onMoveToColumn={handleMoveToColumn}
-                  onQuickAddTask={handleQuickAddTask}
-                  onTaskUpdated={loadBoardData}
-                />
+                <div
+                  key={lane.id}
+                  className="bg-[#FFFCF6] rounded-[12px] overflow-hidden border border-[#DED8CB]"
+                >
+                  <div
+                    onClick={() => toggleSwimlaneCollapse(lane.id)}
+                    className="px-4 py-3 bg-[#F3EFE5] hover:bg-[#EDE7DA] border-b border-[#DED8CB] flex items-center justify-between cursor-pointer transition-colors select-none"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <button
+                        type="button"
+                        className="p-0.5 rounded-[4px] text-[#5D655A] hover:text-[#33382F]"
+                      >
+                        {isCollapsed ? (
+                          <ChevronRight className="w-4 h-4" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4" />
+                        )}
+                      </button>
+
+                      {lane.avatarName ? (
+                        <span
+                          className={`w-6 h-6 rounded-full text-[10.5px] font-semibold flex items-center justify-center ${getAvatarColor(
+                            lane.avatarName
+                          )}`}
+                        >
+                          {getInitials(lane.avatarName)}
+                        </span>
+                      ) : (
+                        <Flag className="w-4 h-4 text-[#596D56]" />
+                      )}
+
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-[14px] font-semibold text-[#33382F]">
+                          {lane.title}
+                        </h3>
+                        <span
+                          className="text-[11.5px] font-medium text-[#5D655A] bg-[#FFFCF6] px-2 py-0.2 rounded-[5px] border border-[#DED8CB]"
+                          data-tabular-nums="true"
+                        >
+                          {lane.tasks.length}
+                        </span>
+                        {lane.subtitle && (
+                          <span className="text-[12px] text-[#70786D] capitalize">
+                            · {lane.subtitle}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {!isCollapsed && (
+                    <div className="p-4 overflow-x-auto bg-[#F7F4EC]">
+                      <div className="flex items-start gap-4 min-w-max">
+                        {columns.map((col) => {
+                          const colTasks = lane.tasks.filter((t) => t.column_id === col.id);
+                          return (
+                            <KanbanColumn
+                              key={col.id}
+                              column={col}
+                              tasks={colTasks}
+                              allColumns={columns}
+                              onOpenDetail={handleOpenDetail}
+                              onMoveToColumn={handleMoveToColumn}
+                              onQuickAddTask={handleQuickAddTask}
+                              onTaskUpdated={loadBoardData}
+                            />
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
               );
             })}
-          </div>
 
-          <DragOverlay dropAnimation={null}>
-            {activeDragTask ? (
-              <div className="w-72">
-                <TaskCard
-                  task={activeDragTask}
-                  columns={columns}
-                  isDragOverlay={true}
-                />
+            <DragOverlay dropAnimation={null}>
+              {activeDragTask ? (
+                <div className="w-[296px]">
+                  <TaskCard
+                    task={activeDragTask}
+                    columns={columns}
+                    isDragOverlay={true}
+                  />
+                </div>
+              ) : null}
+            </DragOverlay>
+          </DndContext>
+        </div>
+      ) : (
+        /* Standard Kanban Board Track */
+        <div className="flex-1 overflow-x-auto overflow-y-hidden px-6 md:px-8 py-5">
+          {loading && columns.length === 0 ? (
+            <div className="p-8 text-[13.5px] text-[#70786D]">Loading project board...</div>
+          ) : (
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCorners}
+              onDragStart={handleDragStart}
+              onDragOver={handleDragOver}
+              onDragEnd={handleDragEnd}
+            >
+              <div className="flex items-start gap-4 h-full min-w-max pb-2">
+                {columns.map((col) => {
+                  const colTasks = filteredTasks.filter((t) => t.column_id === col.id);
+                  return (
+                    <KanbanColumn
+                      key={col.id}
+                      column={col}
+                      tasks={colTasks}
+                      allColumns={columns}
+                      onOpenDetail={handleOpenDetail}
+                      onMoveToColumn={handleMoveToColumn}
+                      onQuickAddTask={handleQuickAddTask}
+                      onTaskUpdated={loadBoardData}
+                    />
+                  );
+                })}
               </div>
-            ) : null}
-          </DragOverlay>
-        </DndContext>
-      </div>
 
-      {/* Modals */}
+              <DragOverlay dropAnimation={null}>
+                {activeDragTask ? (
+                  <div className="w-[296px]">
+                    <TaskCard
+                      task={activeDragTask}
+                      columns={columns}
+                      isDragOverlay={true}
+                    />
+                  </div>
+                ) : null}
+              </DragOverlay>
+            </DndContext>
+          )}
+        </div>
+      )}
+
+      {/* Archive Drawer */}
+      <ArchiveDrawer
+        isOpen={isArchiveOpen}
+        onClose={() => setIsArchiveOpen(false)}
+        tasks={tasks}
+        columns={columns}
+        onTaskRestored={loadBoardData}
+        onOpenDetail={(taskId) => {
+          setIsArchiveOpen(false);
+          handleOpenDetail(taskId);
+        }}
+      />
+
+      {/* Create Task Modal */}
+      <CreateTaskModal
+        projectId={currentProject.id}
+        columns={columns}
+        defaultColumnId={targetColumnForCreate}
+        members={workspaceMembers}
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSuccess={loadBoardData}
+      />
+
+      {/* Task Detail Modal */}
       <TaskDetailModal
         taskId={selectedTaskId}
         columns={columns}
@@ -443,16 +854,6 @@ export function KanbanBoard() {
           setSelectedTaskId(null);
         }}
         onTaskUpdated={loadBoardData}
-      />
-
-      <CreateTaskModal
-        projectId={currentProject.id}
-        columns={columns}
-        defaultColumnId={targetColumnForCreate}
-        members={workspaceMembers}
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onSuccess={loadBoardData}
       />
     </div>
   );

@@ -13,6 +13,7 @@ import { CreateTaskModal } from '../task/CreateTaskModal.tsx';
 import { DailyDigestModal } from '../digest/DailyDigestModal.tsx';
 import { TeamPulseWidget } from '../team/TeamPulseWidget.tsx';
 import { HeaderSearchBar } from './HeaderSearchBar.tsx';
+import { PrismLogo } from '../ui/PrismLogo.tsx';
 import { api } from '../../lib/api.ts';
 import type { User, BoardColumn } from '../../types/index.ts';
 import { getAvatarColor, getInitials } from '../../lib/utils.ts';
@@ -25,7 +26,6 @@ import {
   ChevronDown,
   Plus,
   LogOut,
-  Folder,
   Circle,
   Menu,
   X,
@@ -52,22 +52,18 @@ export function AppLayout() {
   const [isDigestModalOpen, setIsDigestModalOpen] = useState(false);
   const [selectedNotificationTaskId, setSelectedNotificationTaskId] = useState<string | null>(null);
 
-  // Quick Task Creation Modal from header button
   const [isHeaderCreateTaskOpen, setIsHeaderCreateTaskOpen] = useState(false);
   const [projectColumns, setProjectColumns] = useState<BoardColumn[]>([]);
 
-  // Demo users
   const [demoUsers, setDemoUsers] = useState<User[]>([]);
   const [showDemoUserMenu, setShowDemoUserMenu] = useState(false);
 
-  // Workspace/Project modals
   const [showWorkspaceModal, setShowWorkspaceModal] = useState(false);
   const [newWsName, setNewWsName] = useState('');
   const [showProjectModal, setShowProjectModal] = useState(false);
   const [newProjName, setNewProjName] = useState('');
   const [newProjDesc, setNewProjDesc] = useState('');
 
-  // Dropdown & Mobile sidebar state
   const [showWsDropdown, setShowWsDropdown] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -107,50 +103,60 @@ export function AppLayout() {
     }
   };
 
-  // Other active teammates currently online (excluding self)
   const otherActiveViewers = activeViewers.filter((v) => v.userId !== user?.id);
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#F8F9FB] text-[#20242B] font-sans antialiased">
-      {/* Sidebar: 240px desktop width, calm #F4F5F7 surface */}
+    <div className="flex h-screen w-screen overflow-hidden bg-[#F7F4EC] text-[#33382F] antialiased">
+      {/* Mobile Sidebar Backdrop */}
+      {mobileSidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-[#33382F]/20 md:hidden"
+          onClick={() => setMobileSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar: 226px desktop width, warm oatmeal surface (#F1EBDD) */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-60 bg-[#F4F5F7] border-r border-[#E7E9ED] flex flex-col justify-between transition-transform duration-200 md:static md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 w-[226px] bg-[#F1EBDD] border-r border-[#DED8CB] flex flex-col justify-between transition-transform duration-150 md:static md:translate-x-0 shrink-0 ${
           mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="flex flex-col h-full overflow-y-auto">
-          {/* Workspace Switcher Header */}
-          <div className="p-3 border-b border-[#E7E9ED]/60 relative">
-            <div className="flex items-center justify-between">
+          {/* Workspace Switcher */}
+          <div className="p-3 border-b border-[#DED8CB] relative">
+            <div className="flex items-center justify-between gap-1">
               <button
                 type="button"
                 onClick={() => setShowWsDropdown((p) => !p)}
-                className="w-full flex items-center justify-between p-1.5 hover:bg-[#EAECEF] rounded-lg transition-colors text-left"
+                className="w-full flex items-center justify-between px-2.5 py-2 hover:bg-[#EDE7DA] rounded-[9px] transition-colors text-left cursor-pointer"
               >
-                <div className="flex items-center gap-2 min-w-0">
-                  <div className="w-5 h-5 rounded-md bg-[#20242B] text-white text-[10px] font-bold flex items-center justify-center shrink-0">
-                    {currentWorkspace?.name ? currentWorkspace.name[0].toUpperCase() : 'M'}
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <PrismLogo size="sm" />
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-[13.5px] font-semibold text-[#33382F] truncate leading-tight">
+                      {currentWorkspace?.name || 'Workspace'}
+                    </span>
+                    <span className="text-[11px] text-[#70786D] font-medium capitalize">
+                      {currentWorkspace?.role?.toLowerCase() || 'member'}
+                    </span>
                   </div>
-                  <span className="text-xs font-semibold text-[#20242B] truncate">
-                    {currentWorkspace?.name || 'Workspace'}
-                  </span>
                 </div>
-                <ChevronDown className="w-3.5 h-3.5 text-[#6D7480] shrink-0" />
+                <ChevronDown className="w-4 h-4 text-[#70786D] shrink-0" />
               </button>
 
               <button
                 type="button"
                 onClick={() => setMobileSidebarOpen(false)}
-                className="md:hidden p-1 text-[#6D7480]"
+                className="md:hidden p-1.5 text-[#5D655A] hover:text-[#33382F] rounded-[6px]"
+                aria-label="Close navigation"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Workspace Dropdown */}
             {showWsDropdown && (
-              <div className="absolute left-3 right-3 top-12 z-50 bg-white border border-[#E7E9ED] rounded-xl shadow-lg py-1 text-xs">
-                <div className="px-3 py-1 font-medium text-[10px] text-[#6D7480] uppercase tracking-wider">
+              <div className="absolute left-3 right-3 top-15 z-50 motion-popover py-1.5 text-[12.5px]">
+                <div className="px-3 py-1 font-semibold text-[11px] text-[#70786D] uppercase tracking-wider">
                   Workspaces
                 </div>
                 {workspaces.map((ws) => (
@@ -161,24 +167,28 @@ export function AppLayout() {
                       setCurrentWorkspace(ws);
                       setShowWsDropdown(false);
                     }}
-                    className={`w-full text-left px-3 py-1.5 flex items-center justify-between hover:bg-[#F8F9FB] ${
-                      ws.id === currentWorkspace?.id ? 'font-semibold text-[#20242B]' : 'text-[#6D7480]'
+                    className={`w-full text-left px-3 py-2 flex items-center justify-between hover:bg-[#EDE7DA] transition-colors cursor-pointer ${
+                      ws.id === currentWorkspace?.id
+                        ? 'font-semibold text-[#33382F] bg-[#E3EBDD]/70'
+                        : 'text-[#5D655A]'
                     }`}
                   >
                     <span className="truncate">{ws.name}</span>
-                    <span className="text-[10px] text-[#9CA3AF] capitalize">{ws.role.toLowerCase()}</span>
+                    <span className="text-[11px] text-[#70786D] capitalize">
+                      {ws.role.toLowerCase()}
+                    </span>
                   </button>
                 ))}
-                <div className="border-t border-[#E7E9ED] mt-1 pt-1">
+                <div className="border-t border-[#EAE4D8] mt-1 pt-1">
                   <button
                     type="button"
                     onClick={() => {
                       setShowWsDropdown(false);
                       setShowWorkspaceModal(true);
                     }}
-                    className="w-full text-left px-3 py-1.5 text-[#20242B] hover:bg-[#F8F9FB] flex items-center gap-1.5 font-medium"
+                    className="w-full text-left px-3 py-2 text-[#596D56] hover:bg-[#EDE7DA] flex items-center gap-2 font-semibold cursor-pointer"
                   >
-                    <Plus className="w-3 h-3 text-[#6D7480]" />
+                    <Plus className="w-3.5 h-3.5" />
                     <span>New Workspace</span>
                   </button>
                 </div>
@@ -188,10 +198,10 @@ export function AppLayout() {
 
           {/* Navigation Sections */}
           <div className="p-3 space-y-5 flex-1">
-            {/* MY WORK */}
-            <div className="space-y-0.5">
-              <div className="px-2 pb-1 text-[10px] font-semibold tracking-wider text-[#6D7480] uppercase">
-                My Work
+            {/* MY SPACE */}
+            <div className="space-y-1">
+              <div className="px-2.5 pb-1 text-[11px] font-semibold tracking-wider text-[#70786D] uppercase">
+                My Space
               </div>
               <button
                 type="button"
@@ -199,35 +209,50 @@ export function AppLayout() {
                   setActiveTab('mywork');
                   setMobileSidebarOpen(false);
                 }}
-                className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-[9px] text-[13px] transition-colors cursor-pointer ${
                   activeTab === 'mywork'
-                    ? 'bg-[#EAECEF] text-[#20242B] font-semibold'
-                    : 'text-[#6D7480] hover:text-[#20242B] hover:bg-[#EAECEF]/60'
+                    ? 'bg-[#E3EBDD] text-[#33382F] font-semibold'
+                    : 'text-[#5D655A] hover:text-[#33382F] hover:bg-[#EDE7DA]'
                 }`}
               >
-                <CheckSquare className="w-3.5 h-3.5 shrink-0" />
-                <span>My Tasks</span>
+                <CheckSquare className={`w-4 h-4 shrink-0 ${activeTab === 'mywork' ? 'text-[#596D56]' : 'text-[#70786D]'}`} />
+                <span>My Work</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsDigestModalOpen(true);
+                  setMobileSidebarOpen(false);
+                }}
+                className="w-full flex items-center justify-between px-2.5 py-2 rounded-[9px] text-[13px] font-medium text-[#5D655A] hover:text-[#33382F] hover:bg-[#EDE7DA] transition-colors cursor-pointer"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Mail className="w-4 h-4 text-[#70786D] shrink-0" />
+                  <span>Daily Digest</span>
+                </div>
               </button>
             </div>
 
             {/* PROJECTS */}
             <div className="space-y-1">
-              <div className="flex items-center justify-between px-2 pb-1">
-                <span className="text-[10px] font-semibold tracking-wider text-[#6D7480] uppercase">
+              <div className="flex items-center justify-between px-2.5 pb-1">
+                <span className="text-[11px] font-semibold tracking-wider text-[#70786D] uppercase">
                   Projects
                 </span>
                 <button
                   type="button"
                   onClick={() => setShowProjectModal(true)}
-                  className="p-0.5 text-[#6D7480] hover:text-[#20242B] rounded transition-colors"
+                  className="p-1 text-[#70786D] hover:text-[#33382F] rounded-[6px] hover:bg-[#EDE7DA] transition-colors cursor-pointer"
                   title="Create new project"
                 >
-                  <Plus className="w-3 h-3" />
+                  <Plus className="w-3.5 h-3.5" />
                 </button>
               </div>
 
               {projects.map((p) => {
                 const isSelected = p.id === currentProject?.id;
+                const hasBlockers = (p.blocked_count || 0) > 0;
                 return (
                   <div key={p.id} className="space-y-0.5">
                     <button
@@ -236,37 +261,49 @@ export function AppLayout() {
                         setCurrentProject(p);
                         if (activeTab === 'mywork') setActiveTab('board');
                       }}
-                      className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors text-left ${
+                      className={`w-full flex items-center gap-2.5 px-2.5 py-2 rounded-[9px] text-[13px] transition-colors text-left cursor-pointer ${
                         isSelected && activeTab !== 'mywork'
-                          ? 'text-[#20242B] font-semibold'
-                          : 'text-[#6D7480] hover:text-[#20242B] hover:bg-[#EAECEF]/60'
+                          ? 'bg-[#E3EBDD] text-[#33382F] font-semibold'
+                          : 'text-[#5D655A] hover:text-[#33382F] hover:bg-[#EDE7DA]'
                       }`}
                     >
-                      <Folder className="w-3.5 h-3.5 shrink-0 text-[#6D7480]" />
+                      <span
+                        className="w-2 h-2 rounded-full shrink-0"
+                        style={{
+                          backgroundColor: hasBlockers
+                            ? '#A46F5C'
+                            : isSelected
+                            ? '#596D56'
+                            : '#B9A27C',
+                        }}
+                      />
                       <span className="truncate flex-1">{p.name}</span>
-                      {p.blocked_count && p.blocked_count > 0 ? (
-                        <span className="text-[10px] text-[#B97828] font-semibold">
-                          {p.blocked_count}b
+                      {hasBlockers && (
+                        <span
+                          className="text-[11px] text-[#A46F5C] bg-[#F3E7DD] px-1.5 py-0.2 rounded-[4px] font-medium"
+                          data-tabular-nums="true"
+                          title={`${p.blocked_count} active blocker(s)`}
+                        >
+                          {p.blocked_count}
                         </span>
-                      ) : null}
+                      )}
                     </button>
 
-                    {/* Nested views under active project */}
                     {isSelected && activeTab !== 'mywork' && (
-                      <div className="pl-6 space-y-0.5 border-l border-[#E7E9ED] ml-3.5 my-0.5">
+                      <div className="pl-5 space-y-0.5 border-l border-[#DED8CB] ml-3.5 my-1">
                         <button
                           type="button"
                           onClick={() => {
                             setActiveTab('board');
                             setMobileSidebarOpen(false);
                           }}
-                          className={`w-full flex items-center gap-2 px-2 py-1 rounded-md text-xs transition-colors ${
+                          className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-[6px] text-[12.5px] transition-colors cursor-pointer ${
                             activeTab === 'board'
-                              ? 'bg-white text-[#20242B] font-semibold shadow-2xs'
-                              : 'text-[#6D7480] hover:text-[#20242B]'
+                              ? 'text-[#33382F] font-semibold bg-[#EDE7DA]/80'
+                              : 'text-[#5D655A] hover:text-[#33382F] hover:bg-[#EDE7DA]/50'
                           }`}
                         >
-                          <Kanban className="w-3 h-3" />
+                          <Kanban className="w-3.5 h-3.5 text-[#596D56]" />
                           <span>Board</span>
                         </button>
                         <button
@@ -275,15 +312,15 @@ export function AppLayout() {
                             setActiveTab('blockers');
                             setMobileSidebarOpen(false);
                           }}
-                          className={`w-full flex items-center justify-between px-2 py-1 rounded-md text-xs transition-colors ${
+                          className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-[6px] text-[12.5px] transition-colors cursor-pointer ${
                             activeTab === 'blockers'
-                              ? 'bg-white text-[#20242B] font-semibold shadow-2xs'
-                              : 'text-[#6D7480] hover:text-[#20242B]'
+                              ? 'text-[#33382F] font-semibold bg-[#EDE7DA]/80'
+                              : 'text-[#5D655A] hover:text-[#33382F] hover:bg-[#EDE7DA]/50'
                           }`}
                         >
                           <div className="flex items-center gap-2">
-                            <AlertTriangle className="w-3 h-3 text-[#B97828]" />
-                            <span>Blocker Radar</span>
+                            <AlertTriangle className="w-3.5 h-3.5 text-[#A46F5C]" />
+                            <span>Blockers</span>
                           </div>
                         </button>
                         <button
@@ -292,23 +329,32 @@ export function AppLayout() {
                             setActiveTab('decisions');
                             setMobileSidebarOpen(false);
                           }}
-                          className={`w-full flex items-center gap-2 px-2 py-1 rounded-md text-xs transition-colors ${
+                          className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-[6px] text-[12.5px] transition-colors cursor-pointer ${
                             activeTab === 'decisions'
-                              ? 'bg-white text-[#20242B] font-semibold shadow-2xs'
-                              : 'text-[#6D7480] hover:text-[#20242B]'
+                              ? 'text-[#33382F] font-semibold bg-[#EDE7DA]/80'
+                              : 'text-[#5D655A] hover:text-[#33382F] hover:bg-[#EDE7DA]/50'
                           }`}
                         >
-                          <FileCheck className="w-3 h-3 text-[#5965D8]" />
-                          <span>Decision Notes</span>
+                          <FileCheck className="w-3.5 h-3.5 text-[#596D56]" />
+                          <span>Decisions</span>
                         </button>
                       </div>
                     )}
                   </div>
                 );
               })}
+
+              <button
+                type="button"
+                onClick={() => setShowProjectModal(true)}
+                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-[9px] text-[12.5px] font-medium text-[#596D56] hover:bg-[#EDE7DA] transition-colors cursor-pointer mt-1"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>New Project</span>
+              </button>
             </div>
 
-            {/* Team Pulse Widget */}
+            {/* Compact Team Members & Presence */}
             <TeamPulseWidget
               onSelectTask={(taskId) => {
                 setSelectedNotificationTaskId(taskId);
@@ -321,110 +367,81 @@ export function AppLayout() {
             />
           </div>
 
-          {/* Sidebar Footer: Team Members & Invites, Daily Digest */}
-          <div className="p-3 border-t border-[#E7E9ED]/60 space-y-1">
+          {/* Sidebar Footer: Workspace Members / Settings */}
+          <div className="p-3 border-t border-[#DED8CB]">
             <button
               type="button"
               onClick={() => setIsInviteModalOpen(true)}
-              className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-[#6D7480] hover:text-[#20242B] hover:bg-[#EAECEF] transition-colors cursor-pointer"
+              className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-[9px] text-[13px] font-medium text-[#5D655A] hover:text-[#33382F] hover:bg-[#EDE7DA] transition-colors cursor-pointer"
             >
-              <Users className="w-3.5 h-3.5" />
-              <span>Team &amp; Invites</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsDigestModalOpen(true)}
-              className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium text-[#6D7480] hover:text-[#20242B] hover:bg-[#EAECEF] transition-colors cursor-pointer"
-              title="Daily Digest email summaries of completed tasks and deadlines"
-            >
-              <div className="flex items-center gap-2">
-                <Mail className="w-3.5 h-3.5 text-[#5965D8]" />
-                <span>Daily Digest</span>
-              </div>
-              <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]" title="Scheduler active" />
+              <Users className="w-4 h-4 text-[#70786D]" />
+              <span>Members &amp; Invites</span>
             </button>
           </div>
         </div>
       </aside>
 
       {/* Main Container */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden">
-        {/* Quiet Header */}
-        <header className="h-12 bg-white border-b border-[#E7E9ED] px-4 md:px-6 flex items-center justify-between gap-4 shrink-0 z-30">
-          {/* Left: Mobile Toggle & Context Breadcrumb */}
-          <div className="flex items-center gap-3 shrink-0">
+      <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#F7F4EC]">
+        {/* Global Header: 60px tall, light warm-white surface (#FFFCF6) with bottom divider (#DED8CB) */}
+        <header className="h-[60px] bg-[#FFFCF6] border-b border-[#DED8CB] px-4 md:px-7 flex items-center justify-between gap-4 shrink-0 z-30">
+          {/* Left: Mobile Toggle & MOTION mark + workspace context */}
+          <div className="flex items-center gap-3 min-w-0">
             <button
               type="button"
               onClick={() => setMobileSidebarOpen(true)}
-              className="md:hidden p-1 text-[#6D7480] hover:text-[#20242B]"
+              className="md:hidden p-1.5 text-[#5D655A] hover:text-[#33382F] hover:bg-[#EDE7DA] rounded-[6px] cursor-pointer"
               aria-label="Open sidebar"
             >
               <Menu className="w-4 h-4" />
             </button>
 
-            <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-[#6D7480]">
-              <span className="font-medium text-[#20242B] truncate max-w-[100px] sm:max-w-[140px]">
+            <div className="flex items-center gap-2 text-[13px] min-w-0">
+              <span className="font-bold text-[#33382F] tracking-tight">MOTION</span>
+              <span className="text-[#DED8CB]" aria-hidden="true">/</span>
+              <span className="text-[#5D655A] font-medium truncate">
                 {currentWorkspace?.name || 'Workspace'}
               </span>
-              <span className="text-[#9CA3AF]">/</span>
-              <span className="text-[#6D7480] truncate max-w-[100px] sm:max-w-[140px]">
-                {activeTab === 'mywork' ? 'My Work' : currentProject?.name || 'Project'}
-              </span>
-              {activeTab !== 'mywork' && (
-                <>
-                  <span className="text-[#9CA3AF]">/</span>
-                  <span className="font-semibold text-[#20242B] capitalize hidden sm:inline">
-                    {activeTab === 'board'
-                      ? 'Board'
-                      : activeTab === 'blockers'
-                      ? 'Blocker Radar'
-                      : 'Decision Notes'}
-                  </span>
-                </>
-              )}
-            </nav>
+            </div>
           </div>
 
-          {/* Center: Search Bar in App Header */}
-          <div className="flex-1 flex justify-center max-w-sm sm:max-w-md lg:max-w-lg mx-2">
-            <HeaderSearchBar onSearchFocus={() => setActiveTab('board')} />
-          </div>
-
-          {/* Right: Presence, Switch User, Notifications, Avatar, + New Task */}
+          {/* Center/Right: Compact Search, Presence, Account Switcher, Notifications, Avatar */}
           <div className="flex items-center gap-2.5 shrink-0">
-            {/* Real Teammate Presence (Genuine Socket Presence, quiet text) */}
+            <HeaderSearchBar onSearchFocus={() => setActiveTab('board')} />
+
+            {/* Real Teammate Presence (only when genuine other viewers exist) */}
             {otherActiveViewers.length > 0 && (
               <div
-                className="hidden lg:flex items-center gap-1.5 text-xs text-[#238565] bg-[#E6F4EA]/60 px-2 py-0.5 rounded-md"
+                className="hidden lg:flex items-center gap-1.5 text-[12px] text-[#33382F] bg-[#E6EEE4] px-2.5 py-1 rounded-[6px]"
                 title={otherActiveViewers.map((v) => v.name).join(', ')}
               >
-                <Circle className="w-2 h-2 fill-current" />
-                <span className="text-[11px] font-medium">
+                <Circle className="w-2 h-2 fill-[#62866B] text-[#62866B]" />
+                <span className="font-medium">
                   {otherActiveViewers[0].name.split(' ')[0]}
-                  {otherActiveViewers.length > 1 ? ` +${otherActiveViewers.length - 1}` : ''} online
+                  {otherActiveViewers.length > 1 ? ` +${otherActiveViewers.length - 1}` : ''} active
                 </span>
               </div>
             )}
 
-            {/* Quick Demo Switcher (Quiet, dignified) */}
+            {/* Quick Account Switcher */}
             {demoUsers.length > 0 && (
               <div className="relative">
                 <button
                   type="button"
                   onClick={() => setShowDemoUserMenu((p) => !p)}
-                  className="text-xs px-2 py-1 text-[#6D7480] hover:text-[#20242B] hover:bg-[#F4F5F7] rounded-md transition-colors flex items-center gap-1"
-                  title="Switch user perspective for real-time collaboration verification"
+                  className="text-[12px] px-2.5 py-1.5 text-[#5D655A] hover:text-[#33382F] bg-[#F3EFE5] hover:bg-[#EDE7DA] border border-[#DED8CB] rounded-[6px] transition-colors flex items-center gap-1.5 cursor-pointer"
+                  title="Switch active user account"
                 >
-                  <span className="hidden sm:inline text-[11px]">As:</span>
-                  <span className="font-medium text-[11px] text-[#20242B]">
+                  <span className="hidden sm:inline text-[#70786D]">Account:</span>
+                  <span className="font-semibold text-[#33382F]">
                     {user?.name?.split(' ')[0]}
                   </span>
-                  <ChevronDown className="w-3 h-3 text-[#9CA3AF]" />
+                  <ChevronDown className="w-3 h-3 text-[#70786D]" />
                 </button>
 
                 {showDemoUserMenu && (
-                  <div className="absolute right-0 top-8 z-50 bg-white border border-[#E7E9ED] rounded-xl shadow-lg py-1 w-52 text-xs">
-                    <div className="px-3 py-1 font-medium text-[10px] text-[#9CA3AF] uppercase tracking-wider">
+                  <div className="absolute right-0 top-10 z-50 motion-popover py-1.5 w-56 text-[12.5px]">
+                    <div className="px-3.5 py-1 font-semibold text-[11px] text-[#70786D] uppercase tracking-wider">
                       Switch Active Account
                     </div>
                     {demoUsers.map((du) => (
@@ -435,20 +452,20 @@ export function AppLayout() {
                           switchUserFast(du);
                           setShowDemoUserMenu(false);
                         }}
-                        className={`w-full text-left px-3 py-1.5 flex items-center gap-2 hover:bg-[#F8F9FB] ${
-                          du.id === user?.id ? 'font-semibold text-[#20242B] bg-[#F4F5F7]' : 'text-[#6D7480]'
+                        className={`w-full text-left px-3.5 py-2 flex items-center gap-2.5 hover:bg-[#EDE7DA] transition-colors cursor-pointer ${
+                          du.id === user?.id ? 'font-semibold text-[#33382F] bg-[#E3EBDD]/70' : 'text-[#5D655A]'
                         }`}
                       >
                         <span
-                          className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-semibold ${getAvatarColor(
+                          className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-semibold ${getAvatarColor(
                             du.name
                           )}`}
                         >
                           {getInitials(du.name)}
                         </span>
                         <div className="truncate">
-                          <p className="leading-tight truncate">{du.name}</p>
-                          <p className="text-[10px] text-[#9CA3AF] leading-tight truncate">{du.title}</p>
+                          <p className="leading-tight truncate font-semibold text-[#33382F]">{du.name}</p>
+                          <p className="text-[11px] text-[#70786D] leading-tight truncate">{du.title}</p>
                         </div>
                       </button>
                     ))}
@@ -457,31 +474,18 @@ export function AppLayout() {
               </div>
             )}
 
-            {/* Notifications */}
             <NotificationPopover onSelectTask={(id) => setSelectedNotificationTaskId(id)} />
 
-            {/* Daily Digest Modal Trigger Button */}
-            <button
-              type="button"
-              onClick={() => setIsDigestModalOpen(true)}
-              className="p-1 text-[#6D7480] hover:text-[#20242B] hover:bg-[#F4F5F7] rounded-md transition-colors relative cursor-pointer"
-              title="Daily Digest Email & Schedule Settings"
-              aria-label="Daily Digest Email & Schedule Settings"
-            >
-              <Mail className="w-4 h-4 text-[#5965D8]" />
-              <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A] absolute top-0.5 right-0.5" title="Daily digest scheduler active" />
-            </button>
-
-            {/* User Avatar Menu */}
+            {/* User Avatar Menu (32px) */}
             <div className="relative">
               <button
                 type="button"
                 onClick={() => setShowUserDropdown((p) => !p)}
-                className="p-0.5 rounded-full hover:ring-1 hover:ring-[#E7E9ED] transition-all"
+                className="rounded-full focus:outline-hidden cursor-pointer"
                 aria-label="User account menu"
               >
                 <span
-                  className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${getAvatarColor(
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-[11.5px] font-semibold ${getAvatarColor(
                     user?.name || ''
                   )}`}
                 >
@@ -490,10 +494,10 @@ export function AppLayout() {
               </button>
 
               {showUserDropdown && (
-                <div className="absolute right-0 top-8 z-50 bg-white border border-[#E7E9ED] rounded-xl shadow-lg py-1 w-44 text-xs">
-                  <div className="px-3 py-1.5 border-b border-[#E7E9ED]">
-                    <p className="font-semibold text-[#20242B] leading-tight truncate">{user?.name}</p>
-                    <p className="text-[10px] text-[#9CA3AF] leading-tight truncate">{user?.email}</p>
+                <div className="absolute right-0 top-10 z-50 motion-popover py-1.5 w-48 text-[12.5px]">
+                  <div className="px-3.5 py-2 border-b border-[#EAE4D8]">
+                    <p className="font-semibold text-[#33382F] leading-tight truncate">{user?.name}</p>
+                    <p className="text-[11px] text-[#70786D] leading-tight truncate mt-0.5">{user?.email}</p>
                   </div>
                   <button
                     type="button"
@@ -501,10 +505,10 @@ export function AppLayout() {
                       setShowUserDropdown(false);
                       setIsInviteModalOpen(true);
                     }}
-                    className="w-full text-left px-3 py-1.5 text-[#6D7480] hover:text-[#20242B] hover:bg-[#F8F9FB] flex items-center gap-2"
+                    className="w-full text-left px-3.5 py-2 text-[#5D655A] hover:text-[#33382F] hover:bg-[#EDE7DA] flex items-center gap-2 cursor-pointer"
                   >
-                    <Users className="w-3.5 h-3.5" />
-                    <span>Workspace Team</span>
+                    <Users className="w-3.5 h-3.5 text-[#70786D]" />
+                    <span>Members &amp; Invites</span>
                   </button>
                   <button
                     type="button"
@@ -512,7 +516,7 @@ export function AppLayout() {
                       setShowUserDropdown(false);
                       logout();
                     }}
-                    className="w-full text-left px-3 py-1.5 text-[#C54D4D] hover:bg-[#FEE2E2]/40 flex items-center gap-2"
+                    className="w-full text-left px-3.5 py-2 text-[#985C51] hover:bg-[#F3E7DD]/60 flex items-center gap-2 cursor-pointer font-medium"
                   >
                     <LogOut className="w-3.5 h-3.5" />
                     <span>Sign out</span>
@@ -520,26 +524,23 @@ export function AppLayout() {
                 </div>
               )}
             </div>
-
-            {/* Single Primary Action */}
-            {currentProject && activeTab !== 'mywork' && (
-              <button
-                type="button"
-                onClick={() => setIsHeaderCreateTaskOpen(true)}
-                className="text-xs font-semibold bg-[#20242B] hover:bg-[#323842] text-white px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1 cursor-pointer shrink-0"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">New Task</span>
-              </button>
-            )}
           </div>
         </header>
 
         {/* Main Work Surface */}
-        <main className="flex-1 flex flex-col overflow-hidden">
-          {activeTab === 'board' && <KanbanBoard />}
-          {activeTab === 'blockers' && <BlockerRadarView />}
-          {activeTab === 'decisions' && <DecisionsView />}
+        <main className="flex-1 flex flex-col overflow-hidden relative bg-[#F7F4EC]">
+          {activeTab === 'board' && (
+            <KanbanBoard
+              onNavigateTab={(tab) => setActiveTab(tab)}
+              onOpenInvite={() => setIsInviteModalOpen(true)}
+            />
+          )}
+          {activeTab === 'blockers' && (
+            <BlockerRadarView onNavigateTab={(tab) => setActiveTab(tab)} />
+          )}
+          {activeTab === 'decisions' && (
+            <DecisionsView onNavigateTab={(tab) => setActiveTab(tab)} />
+          )}
           {activeTab === 'mywork' && <MyWorkView />}
         </main>
       </div>
@@ -572,12 +573,12 @@ export function AppLayout() {
 
       {/* Create Workspace Modal */}
       {showWorkspaceModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-2xs p-4">
-          <div className="bg-white rounded-xl shadow-lg border border-[#E7E9ED] max-w-sm w-full p-5 space-y-3">
-            <h2 className="text-sm font-bold text-[#20242B]">Create Workspace</h2>
-            <form onSubmit={handleCreateWorkspace} className="space-y-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#33382F]/25 p-4">
+          <div className="motion-modal max-w-sm w-full p-6 space-y-4">
+            <h2 className="text-[17px] font-semibold text-[#33382F]">Create Workspace</h2>
+            <form onSubmit={handleCreateWorkspace} className="space-y-4">
               <div>
-                <label htmlFor="ws-name-input" className="block text-xs font-medium text-[#6D7480] mb-1">
+                <label htmlFor="ws-name-input" className="block text-[12.5px] font-medium text-[#5D655A] mb-1.5">
                   Workspace Name
                 </label>
                 <input
@@ -586,7 +587,7 @@ export function AppLayout() {
                   value={newWsName}
                   onChange={(e) => setNewWsName(e.target.value)}
                   placeholder="e.g. Acme Studio"
-                  className="w-full text-xs border border-[#E7E9ED] rounded-lg p-2 text-[#20242B] focus:outline-hidden focus:border-[#5965D8]"
+                  className="w-full text-[13.5px] motion-input px-3 py-2"
                   autoFocus
                 />
               </div>
@@ -594,13 +595,13 @@ export function AppLayout() {
                 <button
                   type="button"
                   onClick={() => setShowWorkspaceModal(false)}
-                  className="px-3 py-1.5 text-xs text-[#6D7480] hover:text-[#20242B]"
+                  className="px-3.5 py-2 btn-secondary cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-3 py-1.5 text-xs font-semibold bg-[#20242B] text-white rounded-lg"
+                  className="px-4 py-2 btn-primary cursor-pointer"
                 >
                   Create
                 </button>
@@ -612,12 +613,12 @@ export function AppLayout() {
 
       {/* Create Project Modal */}
       {showProjectModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-2xs p-4">
-          <div className="bg-white rounded-xl shadow-lg border border-[#E7E9ED] max-w-sm w-full p-5 space-y-3">
-            <h2 className="text-sm font-bold text-[#20242B]">Create Project</h2>
-            <form onSubmit={handleCreateProject} className="space-y-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#33382F]/25 p-4">
+          <div className="motion-modal max-w-sm w-full p-6 space-y-4">
+            <h2 className="text-[17px] font-semibold text-[#33382F]">Create Project</h2>
+            <form onSubmit={handleCreateProject} className="space-y-4">
               <div>
-                <label htmlFor="proj-name-input" className="block text-xs font-medium text-[#6D7480] mb-1">
+                <label htmlFor="proj-name-input" className="block text-[12.5px] font-medium text-[#5D655A] mb-1.5">
                   Project Name
                 </label>
                 <input
@@ -625,13 +626,13 @@ export function AppLayout() {
                   type="text"
                   value={newProjName}
                   onChange={(e) => setNewProjName(e.target.value)}
-                  placeholder="e.g. Webhook Pipeline"
-                  className="w-full text-xs border border-[#E7E9ED] rounded-lg p-2 text-[#20242B] focus:outline-hidden focus:border-[#5965D8]"
+                  placeholder="e.g. Atlas Dashboard"
+                  className="w-full text-[13.5px] motion-input px-3 py-2"
                   autoFocus
                 />
               </div>
               <div>
-                <label htmlFor="proj-desc-input" className="block text-xs font-medium text-[#6D7480] mb-1">
+                <label htmlFor="proj-desc-input" className="block text-[12.5px] font-medium text-[#5D655A] mb-1.5">
                   Description
                 </label>
                 <textarea
@@ -639,21 +640,21 @@ export function AppLayout() {
                   rows={2}
                   value={newProjDesc}
                   onChange={(e) => setNewProjDesc(e.target.value)}
-                  placeholder="Goals, deliverables..."
-                  className="w-full text-xs border border-[#E7E9ED] rounded-lg p-2 text-[#20242B] resize-none focus:outline-hidden focus:border-[#5965D8]"
+                  placeholder="Short project summary or current focus..."
+                  className="w-full text-[13.5px] motion-input p-3 resize-none"
                 />
               </div>
               <div className="flex justify-end gap-2 pt-1">
                 <button
                   type="button"
                   onClick={() => setShowProjectModal(false)}
-                  className="px-3 py-1.5 text-xs text-[#6D7480] hover:text-[#20242B]"
+                  className="px-3.5 py-2 btn-secondary cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-3 py-1.5 text-xs font-semibold bg-[#20242B] text-white rounded-lg"
+                  className="px-4 py-2 btn-primary cursor-pointer"
                 >
                   Create Project
                 </button>
@@ -663,7 +664,7 @@ export function AppLayout() {
         </div>
       )}
 
-      {/* Daily Digest & Email Reports Modal */}
+      {/* Daily Digest Modal */}
       <DailyDigestModal
         isOpen={isDigestModalOpen}
         onClose={() => setIsDigestModalOpen(false)}

@@ -24,10 +24,8 @@ import {
   Clock,
   Send,
   Trash2,
-  Calendar,
   Link2,
   Plus,
-  Check,
   CornerDownRight,
 } from 'lucide-react';
 
@@ -353,24 +351,23 @@ export function TaskDetailModal({
   const hasEstimate = estimated !== null && estimated > 0;
   const percentSpent = hasEstimate ? Math.round((timeSpent / estimated!) * 100) : 0;
   const isOver = hasEstimate && timeSpent > estimated!;
-  const isNear = hasEstimate && !isOver && percentSpent >= 80;
-  const overAmount = isOver ? (timeSpent - estimated!).toFixed(1) : null;
-  const remainingAmount = hasEstimate && !isOver ? (estimated! - timeSpent).toFixed(1) : null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center md:justify-end bg-black/25 backdrop-blur-2xs">
-      <div className="bg-white w-full max-w-xl h-full max-h-screen flex flex-col border-l border-[#E7E9ED] shadow-xl overflow-hidden animate-in slide-in-from-right duration-200">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-3 border-b border-[#E7E9ED] bg-[#F8F9FB] shrink-0">
-          <div className="flex items-center gap-2 text-xs text-[#6D7480]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center md:justify-end bg-[#33382F]/20 animate-in fade-in duration-150">
+      <div className="bg-[#FFFDF9] w-full md:w-[min(600px,48vw)] h-full max-h-screen flex flex-col border-l border-[#DED8CB] shadow-xl overflow-hidden">
+        {/* 1. Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#EAE4D8] bg-[#FFFCF6] shrink-0">
+          <div className="flex items-center gap-2 text-[12px] text-[#70786D] font-medium">
             <span>{task?.project_name || 'Project'}</span>
             <span>/</span>
-            <span className="text-[#20242B] font-medium">{task?.column_name || 'Task'}</span>
+            <span className="text-[#33382F] font-semibold bg-[#F3EFE5] border border-[#DED8CB] px-2 py-0.5 rounded-[6px]">
+              {task?.column_name || 'Task'}
+            </span>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="text-[#9CA3AF] hover:text-[#20242B] p-1 rounded-md transition-colors"
+            className="text-[#70786D] hover:text-[#33382F] p-1.5 rounded-[6px] hover:bg-[#EDE7DA] transition-colors cursor-pointer"
             aria-label="Close task details"
           >
             <X className="w-4 h-4" />
@@ -378,28 +375,28 @@ export function TaskDetailModal({
         </div>
 
         {loading && !task ? (
-          <div className="flex-1 flex items-center justify-center p-8 text-[#6D7480] text-xs">
+          <div className="flex-1 flex items-center justify-center p-8 text-[#70786D] text-[13px]">
             Loading task...
           </div>
         ) : task ? (
-          <div className="flex-1 overflow-y-auto divide-y divide-[#F4F5F7]">
-            {/* Blocker Banner (if blocked) */}
+          <div className="flex-1 overflow-y-auto divide-y divide-[#EAE4D8]">
+            {/* 4. Blocker Callout (if active) */}
             {task.is_blocked && task.activeBlocker ? (
-              <div className="p-4 bg-[#FAF8F5] border-b border-[#EFE9DF] flex items-start justify-between gap-3 text-xs">
+              <div className="p-4 bg-[#F3E7DD] border-b border-[#DFC2B0] flex items-start justify-between gap-3">
                 <div className="space-y-1 min-w-0">
-                  <div className="flex items-center gap-1.5 font-semibold text-[#92400E]">
-                    <AlertTriangle className="w-3.5 h-3.5 text-[#B97828]" />
-                    <span>Operational Blocker</span>
-                    <span className="text-[10px] text-[#78350F] font-mono" data-tabular-nums="true">
+                  <div className="flex items-center gap-1.5 font-semibold text-[#7B4B3A] text-[13px]">
+                    <AlertTriangle className="w-4 h-4 text-[#A46F5C]" />
+                    <span>Blocked</span>
+                    <span className="text-[11.5px] text-[#7B4B3A]/80" data-tabular-nums="true">
                       · {getBlockerAgeDays(task.activeBlocker.created_at)}
                     </span>
                   </div>
-                  <p className="text-[#78350F] leading-relaxed">
+                  <p className="text-[13px] text-[#33382F] leading-relaxed">
                     {task.activeBlocker.reason}
                   </p>
                   {task.activeBlocker.waiting_on_name && (
-                    <p className="text-[11px] text-[#92400E]">
-                      Waiting on <span className="font-semibold">{task.activeBlocker.waiting_on_name}</span>
+                    <p className="text-[12px] text-[#7B4B3A]">
+                      Waiting on <strong className="font-semibold">{task.activeBlocker.waiting_on_name}</strong>
                     </p>
                   )}
                 </div>
@@ -407,7 +404,7 @@ export function TaskDetailModal({
                 <button
                   type="button"
                   onClick={() => setIsResolveModalOpen(true)}
-                  className="px-2.5 py-1 text-xs bg-[#238565] hover:bg-[#1E7357] text-white font-medium rounded-lg transition-colors flex items-center gap-1 shrink-0"
+                  className="btn-primary px-3 py-1.5 text-[12.5px] rounded-[9px] flex items-center gap-1.5 shrink-0 cursor-pointer"
                 >
                   <CheckCircle2 className="w-3.5 h-3.5" />
                   <span>Resolve</span>
@@ -415,7 +412,7 @@ export function TaskDetailModal({
               </div>
             ) : null}
 
-            {/* Title & Metadata */}
+            {/* 2. Title & Context Metadata */}
             <div className="p-6 space-y-4">
               <input
                 type="text"
@@ -424,35 +421,37 @@ export function TaskDetailModal({
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') (e.target as HTMLInputElement).blur();
                 }}
-                className="w-full text-base font-bold text-[#20242B] border-none p-0 focus:outline-hidden focus:ring-0 hover:bg-[#F8F9FB] rounded px-1 -mx-1 transition-colors"
+                className="w-full text-[20px] font-bold tracking-[-0.015em] text-[#33382F] bg-transparent border border-transparent focus:border-[#596D56] hover:bg-[#F3EFE5]/60 rounded-[9px] px-2 py-1 -mx-2 focus:outline-hidden transition-colors leading-snug"
                 title="Click to edit task title"
               />
 
-              {/* Status Row */}
-              <div className="flex flex-wrap items-center gap-4 text-xs">
+              {/* Context Metadata Row */}
+              <div className="flex flex-wrap items-center gap-3 text-[12.5px]">
                 {/* Column */}
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[#9CA3AF]">Status:</span>
-                  <select
-                    value={task.column_id}
-                    onChange={(e) => handleColumnChange(e.target.value)}
-                    className="bg-[#F4F5F7] hover:bg-[#EAECEF] text-[#20242B] font-medium rounded-md px-2 py-1 border-none cursor-pointer text-xs"
-                  >
-                    {columns.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                {columns.length > 0 && (
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[#70786D] font-medium">Status</span>
+                    <select
+                      value={task.column_id}
+                      onChange={(e) => handleColumnChange(e.target.value)}
+                      className="motion-input font-medium rounded-[6px] px-2.5 py-1 text-[12.5px] cursor-pointer"
+                    >
+                      {columns.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
                 {/* Priority */}
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[#9CA3AF]">Priority:</span>
+                  <span className="text-[#70786D] font-medium">Priority</span>
                   <select
                     value={task.priority}
                     onChange={(e) => handlePriorityChange(e.target.value as PriorityLevel)}
-                    className="bg-[#F4F5F7] hover:bg-[#EAECEF] text-[#20242B] font-medium rounded-md px-2 py-1 border-none cursor-pointer text-xs"
+                    className="motion-input font-medium rounded-[6px] px-2.5 py-1 text-[12.5px] cursor-pointer"
                   >
                     <option value="LOW">Low</option>
                     <option value="MEDIUM">Medium</option>
@@ -462,19 +461,19 @@ export function TaskDetailModal({
 
                 {/* Due Date */}
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[#9CA3AF]">Due:</span>
+                  <span className="text-[#70786D] font-medium">Due</span>
                   <input
                     type="date"
                     defaultValue={task.due_date ? task.due_date.substring(0, 10) : ''}
                     onChange={(e) => handleDueDateChange(e.target.value)}
-                    className="bg-[#F4F5F7] hover:bg-[#EAECEF] text-[#20242B] font-medium rounded-md px-2 py-1 border-none cursor-pointer text-xs"
+                    className="motion-input font-medium rounded-[6px] px-2.5 py-1 text-[12.5px] cursor-pointer"
                   />
                 </div>
 
                 {/* Estimate */}
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[#9CA3AF]">Estimate:</span>
-                  <div className="flex items-center bg-[#F4F5F7] hover:bg-[#EAECEF] rounded-md px-2 py-1 text-xs">
+                  <span className="text-[#70786D] font-medium">Estimate</span>
+                  <div className="flex items-center motion-input rounded-[6px] px-2 py-1 text-[12.5px]">
                     <input
                       type="number"
                       step="0.5"
@@ -489,13 +488,12 @@ export function TaskDetailModal({
                         }
                       }}
                       placeholder="0.0"
-                      className="w-12 bg-transparent text-[#20242B] font-mono font-medium border-none focus:outline-hidden p-0 text-xs"
-                      title="Estimated effort in hours (auto-saves on blur)"
+                      className="w-10 bg-transparent text-[#33382F] font-semibold border-none focus:outline-hidden p-0 text-[12.5px]"
+                      data-tabular-nums="true"
+                      title="Estimated effort in hours"
                     />
-                    <span className="text-[#9CA3AF] text-[10px] ml-0.5">hrs</span>
-                    {savingEstimate && (
-                      <span className="text-[9px] text-[#5965D8] ml-1">...</span>
-                    )}
+                    <span className="text-[#70786D] text-[11px] ml-0.5">h</span>
+                    {savingEstimate && <span className="text-[10px] text-[#70786D] ml-1">...</span>}
                   </div>
                 </div>
 
@@ -504,9 +502,9 @@ export function TaskDetailModal({
                   <button
                     type="button"
                     onClick={() => setIsBlockerModalOpen(true)}
-                    className="px-2 py-1 text-xs text-[#B97828] hover:bg-[#FAF8F5] rounded-md transition-colors flex items-center gap-1 border border-[#EFE9DF]"
+                    className="px-2.5 py-1 text-[12px] text-[#7B4B3A] bg-[#F3E7DD] hover:bg-[#EBDDD0] rounded-[6px] transition-colors flex items-center gap-1 border border-[#DFC2B0] font-semibold cursor-pointer"
                   >
-                    <AlertTriangle className="w-3 h-3" />
+                    <AlertTriangle className="w-3.5 h-3.5 text-[#A46F5C]" />
                     <span>Mark Blocked</span>
                   </button>
                 )}
@@ -514,7 +512,9 @@ export function TaskDetailModal({
 
               {/* Assignees */}
               <div className="space-y-1.5 pt-1">
-                <span className="text-[11px] font-medium text-[#6D7480]">Assignees</span>
+                <span className="text-[11.5px] font-semibold text-[#70786D] uppercase tracking-[0.04em]">
+                  Assignees
+                </span>
                 <div className="flex flex-wrap items-center gap-1.5">
                   {members.map((m) => {
                     const isAssigned = task.assignees.some((a) => a.user_id === m.user_id);
@@ -523,16 +523,16 @@ export function TaskDetailModal({
                         type="button"
                         key={m.user_id}
                         onClick={() => handleAssigneeToggle(m.user_id)}
-                        className={`text-xs px-2 py-0.5 rounded-full border transition-colors flex items-center gap-1.5 cursor-pointer ${
+                        className={`text-[12px] px-2.5 py-1 rounded-[6px] border transition-colors flex items-center gap-1.5 cursor-pointer ${
                           isAssigned
-                            ? 'bg-[#20242B] text-white border-[#20242B]'
-                            : 'bg-white text-[#6D7480] border-[#E7E9ED] hover:border-[#D1D5DB]'
+                            ? 'bg-[#E3EBDD] text-[#33382F] border-[#C8D8C1] font-semibold'
+                            : 'bg-[#F3EFE5] text-[#5D655A] border-[#DED8CB] hover:bg-[#EDE7DA] hover:text-[#33382F]'
                         }`}
                       >
                         <span
-                          className={`w-3.5 h-3.5 rounded-full flex items-center justify-center text-[8px] font-bold ${
-                            isAssigned ? 'bg-[#374151] text-white' : getAvatarColor(m.name)
-                          }`}
+                          className={`w-4 h-4 rounded-full flex items-center justify-center text-[8.5px] font-bold ${getAvatarColor(
+                            m.name
+                          )}`}
                         >
                           {getInitials(m.name)}
                         </span>
@@ -543,604 +543,183 @@ export function TaskDetailModal({
                 </div>
               </div>
 
-              {/* Description */}
-              <div className="space-y-1 pt-1">
-                <span className="text-[11px] font-medium text-[#6D7480]">Description</span>
+              {/* 3. Description */}
+              <div className="space-y-1.5 pt-1">
+                <span className="text-[11.5px] font-semibold text-[#70786D] uppercase tracking-[0.04em]">
+                  Description
+                </span>
                 <textarea
                   defaultValue={task.description}
                   onBlur={(e) => handleDescriptionBlur(e.target.value)}
                   placeholder="Add notes, specifications, or context..."
                   rows={3}
-                  className="w-full text-xs text-[#20242B] border border-[#E7E9ED] rounded-lg p-2.5 focus:outline-hidden focus:border-[#5965D8] placeholder-[#9CA3AF] resize-none transition-colors"
+                  className="w-full text-[13.5px] text-[#33382F] motion-input rounded-[9px] p-3 placeholder-[#70786D] resize-none leading-relaxed"
                 />
               </div>
             </div>
 
-            {/* Effort & Time Tracking Section (Estimated vs Actual Effort) */}
-            <div className="p-6 space-y-4 bg-white border-t border-[#E7E9ED]">
+            {/* 5. Effort & Time Tracking (compact) */}
+            <div className="p-6 space-y-3 bg-[#FFFCF6]">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-lg bg-[#EEF0FF] flex items-center justify-center text-[#5965D8]">
-                    <Clock className="w-3.5 h-3.5" />
-                  </div>
-                  <div>
-                    <h3 className="text-xs font-bold text-[#20242B]">
-                      Effort &amp; Time Tracking
-                    </h3>
-                    <p className="text-[11px] text-[#6D7480]">
-                      Track estimated vs actual effort and log team hours
-                    </p>
-                  </div>
+                  <Clock className="w-4 h-4 text-[#5D655A]" />
+                  <h3 className="text-[15px] font-semibold text-[#33382F]">
+                    Effort &amp; Time Tracking
+                  </h3>
+                  <span
+                    className={`text-[12px] px-2 py-0.5 rounded-[6px] border ${
+                      isOver
+                        ? 'bg-[#F3E7DD] text-[#7B4B3A] border-[#DFC2B0] font-semibold'
+                        : 'bg-[#F3EFE5] text-[#5D655A] border-[#DED8CB]'
+                    }`}
+                    data-tabular-nums="true"
+                  >
+                    {timeSpent}h logged {hasEstimate ? `/ ${estimated}h est.` : ''}
+                  </span>
                 </div>
 
                 <button
                   type="button"
                   onClick={() => setShowLogTimeForm((prev) => !prev)}
-                  className="px-2.5 py-1 text-xs bg-[#5965D8] hover:bg-[#434DB7] text-white rounded-lg transition-colors flex items-center gap-1 font-medium cursor-pointer shadow-2xs"
+                  className="btn-secondary px-2.5 py-1 text-[12px] rounded-[6px] flex items-center gap-1 cursor-pointer"
                 >
-                  <Plus className="w-3 h-3" />
+                  <Plus className="w-3.5 h-3.5" />
                   <span>{showLogTimeForm ? 'Cancel' : 'Log Time'}</span>
                 </button>
               </div>
 
-              {/* 3 Metric Cards for Variance Tracking */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
-                {/* 1. Actual Time Spent */}
-                <div className="p-3 rounded-xl border border-[#E7E9ED] bg-[#F8FAFC]">
-                  <span className="text-[10px] uppercase font-semibold text-[#64748B] tracking-wider block">
-                    Actual Time Spent
-                  </span>
-                  <div className="flex items-baseline gap-1 mt-1">
-                    <span className="text-lg font-bold font-mono text-[#1E293B]">{timeSpent}</span>
-                    <span className="text-[11px] text-[#64748B]">hrs</span>
-                  </div>
-                  <span className="text-[10px] text-[#94A3B8] block mt-0.5">
-                    {task.timeLogs && task.timeLogs.length > 0
-                      ? `${task.timeLogs.length} logged ${task.timeLogs.length === 1 ? 'entry' : 'entries'}`
-                      : 'No work logged yet'}
-                  </span>
-                </div>
-
-                {/* 2. Estimated Effort */}
-                <div className="p-3 rounded-xl border border-[#E7E9ED] bg-[#F8FAFC]">
-                  <span className="text-[10px] uppercase font-semibold text-[#64748B] tracking-wider block">
-                    Estimated Effort
-                  </span>
-                  <div className="flex items-baseline gap-1 mt-1">
-                    <span className="text-lg font-bold font-mono text-[#1E293B]">
-                      {hasEstimate ? estimated : '—'}
-                    </span>
-                    <span className="text-[11px] text-[#64748B]">hrs</span>
-                  </div>
-                  <span className="text-[10px] text-[#94A3B8] block mt-0.5">
-                    {hasEstimate ? 'Target effort plan' : 'No estimate defined'}
-                  </span>
-                </div>
-
-                {/* 3. Variance & Status */}
-                <div
-                  className={`p-3 rounded-xl border ${
-                    isOver
-                      ? 'bg-[#FEF2F2] border-[#FECACA]'
-                      : isNear
-                      ? 'bg-[#FFFBEB] border-[#FDE68A]'
-                      : hasEstimate
-                      ? 'bg-[#F0FDF4] border-[#BBF7D0]'
-                      : 'bg-[#F8FAFC] border-[#E7E9ED]'
-                  }`}
-                >
-                  <span
-                    className={`text-[10px] uppercase font-semibold tracking-wider block ${
-                      isOver
-                        ? 'text-[#DC2626]'
-                        : isNear
-                        ? 'text-[#D97706]'
-                        : hasEstimate
-                        ? 'text-[#15803D]'
-                        : 'text-[#64748B]'
-                    }`}
-                  >
-                    Variance Status
-                  </span>
-                  <div className="flex items-baseline gap-1 mt-1">
-                    {isOver ? (
-                      <span className="text-sm font-bold font-mono text-[#DC2626]">
-                        +{overAmount} hrs over
-                      </span>
-                    ) : hasEstimate ? (
-                      <span className="text-sm font-bold font-mono text-[#15803D]">
-                        {remainingAmount} hrs left
-                      </span>
-                    ) : (
-                      <span className="text-xs text-[#94A3B8] italic">Unestimated</span>
-                    )}
-                  </div>
-                  <span
-                    className={`text-[10px] block mt-0.5 ${
-                      isOver
-                        ? 'text-[#991B1B]'
-                        : isNear
-                        ? 'text-[#92400E]'
-                        : hasEstimate
-                        ? 'text-[#166534]'
-                        : 'text-[#94A3B8]'
-                    }`}
-                  >
-                    {hasEstimate ? `${percentSpent}% of estimate used` : 'Set estimate above'}
-                  </span>
-                </div>
-              </div>
-
-              {/* Progress Bar */}
               {hasEstimate && (
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between text-[11px] text-[#64748B]">
-                    <span>Effort Consumed</span>
-                    <span className="font-mono font-semibold text-[#1E293B]">
-                      {timeSpent}h / {estimated}h ({percentSpent}%)
-                    </span>
-                  </div>
-                  <div className="w-full bg-[#E2E8F0] h-2 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full transition-all duration-300 ${
-                        isOver ? 'bg-[#DC2626]' : isNear ? 'bg-[#D97706]' : 'bg-[#5965D8]'
-                      }`}
-                      style={{ width: `${Math.min(percentSpent, 100)}%` }}
-                    />
-                  </div>
+                <div className="w-full bg-[#EDE7DA] h-1.5 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all ${
+                      isOver ? 'bg-[#A46F5C]' : 'bg-[#596D56]'
+                    }`}
+                    style={{ width: `${Math.min(percentSpent, 100)}%` }}
+                  />
                 </div>
               )}
 
-              {/* Manual Entry Logger Form */}
               {showLogTimeForm && (
                 <form
                   onSubmit={handleCreateTimeLog}
-                  className="p-4 bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl space-y-3 text-xs shadow-2xs animate-in fade-in"
+                  className="p-3.5 bg-[#F3EFE5] border border-[#DED8CB] rounded-[9px] space-y-3 text-[12.5px]"
                 >
-                  <div className="flex items-center justify-between pb-1 border-b border-[#E2E8F0]">
-                    <span className="font-semibold text-[#1E293B] flex items-center gap-1.5">
-                      <Clock className="w-3.5 h-3.5 text-[#5965D8]" />
-                      <span>Log Work Effort</span>
-                    </span>
-                    <span className="text-[10px] text-[#64748B]">
-                      Logged under your user profile
-                    </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      { label: '+15m', val: '0.25' },
+                      { label: '+30m', val: '0.5' },
+                      { label: '+1h', val: '1.0' },
+                      { label: '+2h', val: '2.0' },
+                      { label: '+4h', val: '4.0' },
+                    ].map((preset) => (
+                      <button
+                        key={preset.label}
+                        type="button"
+                        onClick={() => setTimeLogHours(preset.val)}
+                        className={`px-2.5 py-1 text-[11.5px] font-semibold rounded-[6px] border transition-colors cursor-pointer ${
+                          timeLogHours === preset.val
+                            ? 'bg-[#596D56] text-[#FFFCF6] border-[#596D56]'
+                            : 'bg-[#FFFCF6] text-[#5D655A] border-[#DED8CB] hover:bg-[#EDE7DA]'
+                        }`}
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
                   </div>
 
-                  {/* Preset Buttons */}
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider block">
-                      Quick Add
-                    </span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {[
-                        { label: '+15m', val: '0.25' },
-                        { label: '+30m', val: '0.5' },
-                        { label: '+1h', val: '1.0' },
-                        { label: '+2h', val: '2.0' },
-                        { label: '+4h', val: '4.0' },
-                      ].map((preset) => (
-                        <button
-                          key={preset.label}
-                          type="button"
-                          onClick={() => setTimeLogHours(preset.val)}
-                          className={`px-2.5 py-1 text-xs font-mono rounded-md border transition-colors cursor-pointer ${
-                            timeLogHours === preset.val
-                              ? 'bg-[#5965D8] text-white border-[#5965D8]'
-                              : 'bg-white hover:bg-[#F1F5F9] text-[#475569] border-[#CBD5E1]'
-                          }`}
-                        >
-                          {preset.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {/* Hours input */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     <div>
-                      <label htmlFor="log-hours-input" className="block text-[11px] font-semibold text-[#20242B] mb-1">
-                        Time Spent (Hours) *
+                      <label htmlFor="log-hours-input" className="block text-[11.5px] font-semibold text-[#5D655A] mb-1">
+                        Hours *
                       </label>
-                      <div className="relative">
-                        <input
-                          id="log-hours-input"
-                          type="number"
-                          step="0.25"
-                          min="0.1"
-                          max="100"
-                          required
-                          value={timeLogHours}
-                          onChange={(e) => setTimeLogHours(e.target.value)}
-                          placeholder="e.g. 1.5"
-                          className="w-full text-xs font-mono border border-[#CBD5E1] rounded-lg p-2 bg-white text-[#20242B] focus:outline-hidden focus:border-[#5965D8]"
-                        />
-                        <span className="absolute right-2.5 top-2 text-[11px] text-[#94A3B8]">
-                          hrs
-                        </span>
-                      </div>
+                      <input
+                        id="log-hours-input"
+                        type="number"
+                        step="0.25"
+                        min="0.1"
+                        max="100"
+                        required
+                        value={timeLogHours}
+                        onChange={(e) => setTimeLogHours(e.target.value)}
+                        className="w-full text-[12.5px] motion-input rounded-[6px] px-2.5 py-1.5"
+                      />
                     </div>
-
-                    {/* Date worked */}
                     <div>
-                      <label htmlFor="log-date-input" className="block text-[11px] font-semibold text-[#20242B] mb-1">
-                        Date Worked
+                      <label htmlFor="log-date-input" className="block text-[11.5px] font-semibold text-[#5D655A] mb-1">
+                        Date
                       </label>
                       <input
                         id="log-date-input"
                         type="date"
                         value={timeLogDate}
                         onChange={(e) => setTimeLogDate(e.target.value)}
-                        className="w-full text-xs border border-[#CBD5E1] rounded-lg p-2 bg-white text-[#20242B] focus:outline-hidden focus:border-[#5965D8]"
+                        className="w-full text-[12.5px] motion-input rounded-[6px] px-2.5 py-1.5"
                       />
                     </div>
                   </div>
 
-                  {/* Work Description note */}
                   <div>
-                    <label htmlFor="log-desc-input" className="block text-[11px] font-semibold text-[#20242B] mb-1">
-                      Description / Work Note <span className="font-normal text-[#94A3B8]">(Optional)</span>
-                    </label>
                     <input
-                      id="log-desc-input"
                       type="text"
                       value={timeLogDesc}
                       onChange={(e) => setTimeLogDesc(e.target.value)}
-                      placeholder="e.g. Investigated auth token expiration, implemented tests"
-                      className="w-full text-xs border border-[#CBD5E1] rounded-lg p-2 bg-white text-[#20242B] focus:outline-hidden focus:border-[#5965D8] placeholder-[#94A3B8]"
+                      placeholder="Work note (optional)..."
+                      className="w-full text-[12.5px] motion-input rounded-[6px] px-2.5 py-1.5"
                     />
                   </div>
 
-                  <div className="flex items-center justify-end gap-2 pt-1">
+                  <div className="flex items-center justify-end gap-2">
                     <button
                       type="button"
                       onClick={() => setShowLogTimeForm(false)}
-                      className="px-3 py-1.5 text-xs text-[#64748B] hover:text-[#1E293B] rounded-lg transition-colors cursor-pointer"
+                      className="btn-tertiary px-2.5 py-1 text-[12px] cursor-pointer"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={loggingTime || !timeLogHours || parseFloat(timeLogHours) <= 0}
-                      className="px-3.5 py-1.5 text-xs bg-[#5965D8] hover:bg-[#434DB7] text-white font-medium rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                      className="btn-primary px-3 py-1 text-[12px] rounded-[6px] cursor-pointer disabled:opacity-50"
                     >
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>{loggingTime ? 'Saving...' : 'Add Worklog'}</span>
+                      {loggingTime ? 'Saving...' : 'Add Entry'}
                     </button>
                   </div>
                 </form>
               )}
 
-              {/* Logged Work History List */}
-              <div className="space-y-2 pt-1">
-                <span className="text-[11px] font-semibold text-[#64748B] uppercase tracking-wider block">
-                  Logged Work History ({task.timeLogs?.length || 0})
-                </span>
-
-                {!task.timeLogs || task.timeLogs.length === 0 ? (
-                  <div className="p-4 text-center border border-dashed border-[#E7E9ED] rounded-xl text-xs text-[#9CA3AF] bg-[#FAF8F5]/50">
-                    No effort logged yet on this task. Click &quot;Log Time&quot; to record hours.
-                  </div>
-                ) : (
-                  <div className="space-y-1.5">
-                    {task.timeLogs.map((log) => (
-                      <div
-                        key={log.id}
-                        className="p-2.5 rounded-lg border border-[#E7E9ED] bg-[#F8FAFC] flex items-center justify-between gap-3 text-xs hover:border-[#CBD5E1] transition-colors"
-                      >
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          {/* User Avatar */}
-                          <span
-                            className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${getAvatarColor(
-                              log.user_name
-                            )}`}
-                            title={log.user_name}
-                          >
-                            {getInitials(log.user_name)}
-                          </span>
-
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              <span className="font-semibold text-[#1E293B] truncate">
-                                {log.user_name}
-                              </span>
-                              <span className="text-[10px] text-[#94A3B8]">·</span>
-                              <span className="text-[10px] text-[#94A3B8]">
-                                {formatDate(log.logged_at)}
-                              </span>
-                            </div>
-                            {log.description ? (
-                              <p className="text-[11px] text-[#475569] truncate mt-0.5">
-                                {log.description}
-                              </p>
-                            ) : (
-                              <p className="text-[10px] text-[#94A3B8] italic mt-0.5">
-                                No note provided
-                              </p>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2 shrink-0">
-                          <span className="px-2 py-0.5 font-mono font-bold text-xs bg-white border border-[#CBD5E1] rounded-md text-[#1E293B]">
-                            {log.hours}h
-                          </span>
-
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteTimeLog(log.id)}
-                            className="p-1 text-[#94A3B8] hover:text-[#DC2626] rounded transition-colors cursor-pointer"
-                            title="Delete this worklog"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Task Dependencies & Blocked Links Section */}
-            <div className="p-6 space-y-3 bg-[#FAF8F5]/80 border-t border-[#E7E9ED]">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <Link2 className="w-3.5 h-3.5 text-[#EA580C]" />
-                  <span className="text-xs font-semibold text-[#20242B]">
-                    Task Dependencies ({task.dependencies?.length || 0})
-                  </span>
-                  {task.dependencies && task.dependencies.some((d) => !d.is_completed) && (
-                    <span className="text-[10px] font-medium bg-[#FFEDD5] text-[#C2410C] px-1.5 py-0.5 rounded border border-[#FED7AA]">
-                      Blocked
-                    </span>
-                  )}
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowAddDepForm((prev) => !prev);
-                    setDepError(null);
-                  }}
-                  className="px-2 py-1 text-xs text-[#EA580C] hover:bg-[#FFF7ED] rounded-md transition-colors flex items-center gap-1 font-medium cursor-pointer"
-                >
-                  <Plus className="w-3 h-3" />
-                  <span>{showAddDepForm ? 'Cancel' : 'Add Prerequisite'}</span>
-                </button>
-              </div>
-
-              <p className="text-[11px] text-[#78350F]">
-                Define tasks that must be finished before this task can proceed, or view downstream tasks waiting on this task.
-              </p>
-
-              {/* Add Dependency Form */}
-              {showAddDepForm && (
-                <form
-                  onSubmit={handleAddDependency}
-                  className="p-3 bg-white border border-[#FED7AA] rounded-lg space-y-2 text-xs shadow-2xs animate-in fade-in"
-                >
-                  <label htmlFor="dep-select-task" className="block text-[11px] font-semibold text-[#20242B]">
-                    Select Prerequisite Task
-                  </label>
-                  {eligibleTasks.length === 0 ? (
-                    <p className="text-[11px] text-[#9CA3AF] italic">
-                      No other available tasks in this project to link.
-                    </p>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <select
-                        id="dep-select-task"
-                        value={selectedDepId}
-                        onChange={(e) => setSelectedDepId(e.target.value)}
-                        className="flex-1 text-xs bg-[#F8F9FB] border border-[#E7E9ED] rounded-lg p-2 text-[#20242B] focus:outline-hidden focus:border-[#5965D8]"
-                        required
-                      >
-                        <option value="">-- Choose a prerequisite task --</option>
-                        {eligibleTasks.map((t) => (
-                          <option key={t.id} value={t.id}>
-                            {t.title} ({t.priority} priority)
-                          </option>
-                        ))}
-                      </select>
-                      <button
-                        type="submit"
-                        disabled={addingDep || !selectedDepId}
-                        className="px-3 py-2 bg-[#20242B] hover:bg-[#323842] text-white rounded-lg font-medium transition-colors disabled:opacity-50 shrink-0 cursor-pointer"
-                      >
-                        {addingDep ? 'Linking...' : 'Link Task'}
-                      </button>
-                    </div>
-                  )}
-
-                  {depError && (
-                    <div className="p-2 text-[11px] bg-[#FEE2E2] text-[#991B1B] rounded-md flex items-center gap-1.5">
-                      <AlertTriangle className="w-3 h-3 shrink-0" />
-                      <span>{depError}</span>
-                    </div>
-                  )}
-                </form>
-              )}
-
-              {/* Prerequisites List (Blocked by) */}
-              <div className="space-y-1.5">
-                <span className="text-[11px] font-semibold text-[#6D7480] uppercase tracking-wider">
-                  Prerequisites (Must be completed first)
-                </span>
-
-                {(!task.dependencies || task.dependencies.length === 0) ? (
-                  <p className="text-xs text-[#9CA3AF] italic bg-white/60 p-2.5 rounded-lg border border-dashed border-[#E7E9ED]">
-                    No prerequisites defined. This task can proceed independently.
-                  </p>
-                ) : (
-                  <div className="space-y-1.5">
-                    {task.dependencies.map((dep) => (
-                      <div
-                        key={dep.id}
-                        className={`flex items-center justify-between gap-2 p-2 rounded-lg border text-xs transition-colors ${
-                          dep.is_completed
-                            ? 'bg-[#F0FDF4] border-[#BBF7D0]'
-                            : 'bg-white border-[#FED7AA]'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2 min-w-0">
-                          {dep.is_completed ? (
-                            <span
-                              className="text-[#16A34A] shrink-0"
-                              title="Completed prerequisite"
-                            >
-                              <CheckCircle2 className="w-3.5 h-3.5" />
-                            </span>
-                          ) : (
-                            <span
-                              className="text-[#EA580C] shrink-0"
-                              title="Incomplete prerequisite - blocking this task"
-                            >
-                              <AlertTriangle className="w-3.5 h-3.5" />
-                            </span>
-                          )}
-
-                          <button
-                            type="button"
-                            onClick={() => handleJumpToTask(dep.depends_on_task_id)}
-                            className="font-medium text-[#20242B] hover:underline truncate text-left cursor-pointer"
-                            title={`Jump to prerequisite task: ${dep.depends_on_title}`}
-                          >
-                            {dep.depends_on_title}
-                          </button>
-
-                          {dep.depends_on_priority && (
-                            <PriorityBadge priority={dep.depends_on_priority} showLabel={false} />
-                          )}
-                        </div>
-
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          <span
-                            className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${
-                              dep.is_completed
-                                ? 'bg-[#DCFCE7] text-[#15803D]'
-                                : 'bg-[#FFEDD5] text-[#C2410C]'
-                            }`}
-                          >
-                            {dep.is_completed ? 'Done' : dep.depends_on_column_name || 'Pending'}
-                          </span>
-
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveDependency(dep.depends_on_task_id)}
-                            className="text-[#9CA3AF] hover:text-[#C54D4D] p-1 rounded hover:bg-white transition-colors cursor-pointer"
-                            title="Remove dependency"
-                            aria-label={`Remove dependency on ${dep.depends_on_title}`}
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Downstream Tasks List (Blocking downstream) */}
-              {task.blocking && task.blocking.length > 0 && (
-                <div className="pt-2 border-t border-[#E7E9ED]/60 space-y-1.5">
-                  <span className="text-[11px] font-semibold text-[#6D7480] uppercase tracking-wider flex items-center gap-1">
-                    <CornerDownRight className="w-3 h-3 text-[#C2410C]" />
-                    <span>Downstream Tasks ({task.blocking.length})</span>
-                    <span className="text-[10px] text-[#9CA3AF] font-normal lowercase">
-                      · {task.completed_at ? 'prerequisite satisfied' : 'waiting for this task to finish'}
-                    </span>
-                  </span>
-
-                  <div className="space-y-1.5">
-                    {task.blocking.map((blocked) => (
-                      <div
-                        key={blocked.id}
-                        className="flex items-center justify-between gap-2 p-2 rounded-lg bg-white border border-[#E7E9ED] text-xs hover:border-[#CBD2FB] transition-colors"
-                      >
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span
-                            className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                              blocked.is_completed ? 'bg-[#16A34A]' : 'bg-[#EA580C]'
-                            }`}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleJumpToTask(blocked.task_id)}
-                            className="font-medium text-[#20242B] hover:underline truncate text-left cursor-pointer"
-                            title={`Jump to blocked task: ${blocked.blocked_task_title}`}
-                          >
-                            {blocked.blocked_task_title}
-                          </button>
-                          {blocked.blocked_task_priority && (
-                            <PriorityBadge priority={blocked.blocked_task_priority} showLabel={false} />
-                          )}
-                        </div>
-
-                        <span className="text-[10px] font-mono text-[#6D7480] bg-[#F4F5F7] px-1.5 py-0.5 rounded shrink-0">
-                          {blocked.blocked_task_column_name || 'In Progress'}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Decision Notes Section (Flagship USP 2) */}
-            <div className="p-6 space-y-3 bg-[#F8F9FB]/60">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
-                  <FileCheck className="w-3.5 h-3.5 text-[#5965D8]" />
-                  <span className="text-xs font-semibold text-[#20242B]">
-                    Decision Notes ({task.decisions.length})
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setDecisionPrefill({});
-                    setIsDecisionModalOpen(true);
-                  }}
-                  className="px-2 py-1 text-xs text-[#5965D8] hover:bg-[#EEF0FF] rounded-md transition-colors flex items-center gap-1 font-medium cursor-pointer"
-                >
-                  <FileCheck className="w-3 h-3" />
-                  <span>Record Decision</span>
-                </button>
-              </div>
-
-              {task.decisions.length === 0 ? (
-                <p className="text-xs text-[#9CA3AF] italic">
-                  No decisions recorded yet. Agreements in comments can be converted into decisions.
-                </p>
-              ) : (
-                <div className="space-y-2">
-                  {task.decisions.map((dec) => (
+              {task.timeLogs && task.timeLogs.length > 0 && (
+                <div className="space-y-1.5 pt-1">
+                  {task.timeLogs.map((log) => (
                     <div
-                      key={dec.id}
-                      className="bg-white border border-[#E7E9ED] rounded-lg p-3 space-y-1 text-xs shadow-2xs"
+                      key={log.id}
+                      className="px-3 py-2 rounded-[6px] border border-[#EAE4D8] bg-[#F7F4EC] flex items-center justify-between gap-2 text-[12px]"
                     >
-                      <div className="flex items-start justify-between gap-2">
-                        <p className="font-semibold text-[#20242B]">{dec.title}</p>
-                        {user?.id === dec.author_id && (
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteDecision(dec.id)}
-                            className="text-[#9CA3AF] hover:text-[#C54D4D] p-0.5"
-                            title="Delete decision note"
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </button>
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span
+                          className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0 ${getAvatarColor(
+                            log.user_name
+                          )}`}
+                        >
+                          {getInitials(log.user_name)}
+                        </span>
+                        <span className="font-semibold text-[#33382F] shrink-0">{log.user_name}</span>
+                        {log.description && (
+                          <span className="text-[#5D655A] truncate">· {log.description}</span>
                         )}
                       </div>
-                      <p className="text-[#20242B]">{dec.summary}</p>
-                      {dec.rationale && (
-                        <p className="text-[11px] text-[#6D7480]">
-                          <span className="font-medium text-[#9CA3AF]">Rationale: </span>
-                          {dec.rationale}
-                        </p>
-                      )}
-                      <div className="text-[10px] text-[#9CA3AF] pt-0.5">
-                        By {dec.author_name} · {formatRelativeTime(dec.created_at)}
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-[11px] text-[#70786D]">{formatDate(log.logged_at)}</span>
+                        <span className="font-semibold text-[#33382F] bg-[#FFFCF6] border border-[#DED8CB] px-1.5 py-0.5 rounded-[4px]" data-tabular-nums="true">
+                          {log.hours}h
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteTimeLog(log.id)}
+                          className="text-[#70786D] hover:text-[#985C51] p-0.5 cursor-pointer"
+                          title="Delete entry"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -1148,28 +727,233 @@ export function TaskDetailModal({
               )}
             </div>
 
-            {/* Discussion & Activity Tabs */}
-            <div className="p-6 space-y-4">
-              <div className="flex items-center gap-4 border-b border-[#E7E9ED] pb-1.5 text-xs">
+            {/* 6. Dependencies */}
+            <div className="p-6 space-y-3 bg-[#FFFCF6]">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Link2 className="w-4 h-4 text-[#5D655A]" />
+                  <h3 className="text-[15px] font-semibold text-[#33382F]">
+                    Dependencies ({task.dependencies?.length || 0})
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAddDepForm((prev) => !prev);
+                    setDepError(null);
+                  }}
+                  className="btn-secondary px-2.5 py-1 text-[12px] rounded-[6px] flex items-center gap-1 cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>{showAddDepForm ? 'Cancel' : 'Add Prerequisite'}</span>
+                </button>
+              </div>
+
+              {showAddDepForm && (
+                <form
+                  onSubmit={handleAddDependency}
+                  className="p-3 bg-[#F3EFE5] border border-[#DED8CB] rounded-[9px] space-y-2 text-[12.5px]"
+                >
+                  {eligibleTasks.length === 0 ? (
+                    <p className="text-[12px] text-[#70786D]">
+                      No other tasks available in this project to link.
+                    </p>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <select
+                        value={selectedDepId}
+                        onChange={(e) => setSelectedDepId(e.target.value)}
+                        className="flex-1 text-[12.5px] motion-input rounded-[6px] px-2.5 py-1.5 cursor-pointer"
+                        required
+                      >
+                        <option value="">Select prerequisite task...</option>
+                        {eligibleTasks.map((t) => (
+                          <option key={t.id} value={t.id}>
+                            {t.title} ({t.priority})
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="submit"
+                        disabled={addingDep || !selectedDepId}
+                        className="btn-primary px-3 py-1.5 text-[12px] rounded-[6px] disabled:opacity-50 shrink-0 cursor-pointer"
+                      >
+                        {addingDep ? 'Linking...' : 'Link'}
+                      </button>
+                    </div>
+                  )}
+
+                  {depError && (
+                    <div className="p-2 text-[12px] bg-[#F3E7DD] border border-[#DFC2B0] text-[#985C51] rounded-[6px]">
+                      {depError}
+                    </div>
+                  )}
+                </form>
+              )}
+
+              {(!task.dependencies || task.dependencies.length === 0) ? (
+                <p className="text-[12.5px] text-[#70786D]">
+                  No prerequisite tasks linked.
+                </p>
+              ) : (
+                <div className="space-y-1.5">
+                  {task.dependencies.map((dep) => (
+                    <div
+                      key={dep.id}
+                      className={`flex items-center justify-between gap-2 px-3 py-2 rounded-[6px] border text-[12.5px] ${
+                        dep.is_completed
+                          ? 'bg-[#E6EEE4]/60 border-[#C8D8C1] text-[#35513A]'
+                          : 'bg-[#F3E7DD]/60 border-[#DFC2B0] text-[#33382F]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        {dep.is_completed ? (
+                          <CheckCircle2 className="w-3.5 h-3.5 text-[#62866B] shrink-0" />
+                        ) : (
+                          <AlertTriangle className="w-3.5 h-3.5 text-[#A46F5C] shrink-0" />
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleJumpToTask(dep.depends_on_task_id)}
+                          className="font-semibold text-[#33382F] hover:text-[#596D56] hover:underline truncate text-left cursor-pointer"
+                        >
+                          {dep.depends_on_title}
+                        </button>
+                        {dep.depends_on_priority && (
+                          <PriorityBadge priority={dep.depends_on_priority} showLabel={false} />
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-[11px] font-medium px-2 py-0.5 rounded-[4px] bg-[#FFFCF6] border border-[#DED8CB] text-[#5D655A]">
+                          {dep.is_completed ? 'Done' : dep.depends_on_column_name || 'Pending'}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveDependency(dep.depends_on_task_id)}
+                          className="text-[#70786D] hover:text-[#985C51] p-1 cursor-pointer"
+                          title="Remove dependency"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Downstream Tasks */}
+              {task.blocking && task.blocking.length > 0 && (
+                <div className="pt-2 space-y-1.5">
+                  <span className="text-[11.5px] font-semibold text-[#70786D] flex items-center gap-1">
+                    <CornerDownRight className="w-3.5 h-3.5" />
+                    <span>Blocking downstream ({task.blocking.length})</span>
+                  </span>
+                  {task.blocking.map((blocked) => (
+                    <div
+                      key={blocked.id}
+                      className="flex items-center justify-between gap-2 px-3 py-2 rounded-[6px] bg-[#F7F4EC] border border-[#EAE4D8] text-[12.5px]"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => handleJumpToTask(blocked.task_id)}
+                        className="font-semibold text-[#33382F] hover:text-[#596D56] hover:underline truncate text-left cursor-pointer"
+                      >
+                        {blocked.blocked_task_title}
+                      </button>
+                      <span className="text-[11px] text-[#5D655A] bg-[#FFFCF6] border border-[#DED8CB] px-2 py-0.5 rounded-[4px] shrink-0">
+                        {blocked.blocked_task_column_name || 'In Progress'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* 7. Decisions */}
+            <div className="p-6 space-y-3 bg-[#FFFCF6]">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <FileCheck className="w-4 h-4 text-[#5D655A]" />
+                  <h3 className="text-[15px] font-semibold text-[#33382F]">
+                    Decisions ({task.decisions.length})
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDecisionPrefill({});
+                    setIsDecisionModalOpen(true);
+                  }}
+                  className="btn-secondary px-2.5 py-1 text-[12px] rounded-[6px] flex items-center gap-1 cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Record Decision</span>
+                </button>
+              </div>
+
+              {task.decisions.length === 0 ? (
+                <p className="text-[12.5px] text-[#70786D]">
+                  No decisions recorded for this task yet.
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {task.decisions.map((dec) => (
+                    <div
+                      key={dec.id}
+                      className="bg-[#F7F4EC] border border-[#DED8CB] rounded-[9px] p-3.5 space-y-1.5 text-[13px]"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="font-semibold text-[#33382F]">{dec.title}</p>
+                        {user?.id === dec.author_id && (
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteDecision(dec.id)}
+                            className="text-[#70786D] hover:text-[#985C51] p-0.5 cursor-pointer"
+                            title="Delete decision"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                      <p className="text-[#33382F] leading-relaxed">{dec.summary}</p>
+                      {dec.rationale && (
+                        <p className="text-[12px] text-[#5D655A] bg-[#FFFCF6] p-2 rounded-[6px] border border-[#EAE4D8]">
+                          <span className="font-semibold text-[#70786D]">Rationale: </span>
+                          {dec.rationale}
+                        </p>
+                      )}
+                      <div className="text-[11px] text-[#70786D] pt-0.5">
+                        Recorded by {dec.author_name} · {formatRelativeTime(dec.created_at)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* 8. Comments & Activity */}
+            <div className="p-6 space-y-4 bg-[#FFFCF6]">
+              <div className="flex items-center gap-4 border-b border-[#EAE4D8] pb-2 text-[13px]">
                 <button
                   type="button"
                   onClick={() => setActiveTab('comments')}
-                  className={`font-semibold pb-1.5 transition-colors flex items-center gap-1.5 ${
+                  className={`font-semibold pb-2 -mb-2.5 transition-colors flex items-center gap-1.5 cursor-pointer border-b-2 ${
                     activeTab === 'comments'
-                      ? 'text-[#20242B] border-b-2 border-[#20242B]'
-                      : 'text-[#6D7480] hover:text-[#20242B]'
+                      ? 'text-[#33382F] border-[#596D56]'
+                      : 'text-[#70786D] border-transparent hover:text-[#33382F]'
                   }`}
                 >
                   <MessageSquare className="w-3.5 h-3.5" />
-                  <span>Discussion ({task.comments.length})</span>
+                  <span>Comments ({task.comments.length})</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setActiveTab('activity')}
-                  className={`font-semibold pb-1.5 transition-colors flex items-center gap-1.5 ${
+                  className={`font-semibold pb-2 -mb-2.5 transition-colors flex items-center gap-1.5 cursor-pointer border-b-2 ${
                     activeTab === 'activity'
-                      ? 'text-[#20242B] border-b-2 border-[#20242B]'
-                      : 'text-[#6D7480] hover:text-[#20242B]'
+                      ? 'text-[#33382F] border-[#596D56]'
+                      : 'text-[#70786D] border-transparent hover:text-[#33382F]'
                   }`}
                 >
                   <Clock className="w-3.5 h-3.5" />
@@ -1180,7 +964,7 @@ export function TaskDetailModal({
               {activeTab === 'comments' ? (
                 <div className="space-y-3">
                   {task.comments.length === 0 ? (
-                    <p className="text-xs text-[#9CA3AF] italic">
+                    <p className="text-[12.5px] text-[#70786D] py-2">
                       No comments yet. Share an update below.
                     </p>
                   ) : (
@@ -1188,21 +972,21 @@ export function TaskDetailModal({
                       {task.comments.map((cmt) => (
                         <div
                           key={cmt.id}
-                          className="bg-white border border-[#E7E9ED] rounded-lg p-3 space-y-1 text-xs"
+                          className="bg-[#F7F4EC] border border-[#EAE4D8] rounded-[9px] p-3.5 space-y-1.5 text-[13px]"
                         >
                           <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-1.5">
+                            <div className="flex items-center gap-2">
                               <span
-                                className={`w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold ${getAvatarColor(
+                                className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold ${getAvatarColor(
                                   cmt.author_name
                                 )}`}
                               >
                                 {getInitials(cmt.author_name)}
                               </span>
-                              <span className="font-semibold text-[#20242B]">
+                              <span className="font-semibold text-[#33382F]">
                                 {cmt.author_name}
                               </span>
-                              <span className="text-[10px] text-[#9CA3AF]">
+                              <span className="text-[11px] text-[#70786D]">
                                 {formatRelativeTime(cmt.created_at)}
                               </span>
                             </div>
@@ -1210,24 +994,24 @@ export function TaskDetailModal({
                               <button
                                 type="button"
                                 onClick={() => handlePromoteCommentToDecision(cmt)}
-                                className="text-[10px] text-[#5965D8] hover:underline flex items-center gap-0.5"
-                                title="Convert to Decision Note"
+                                className="text-[11px] font-medium text-[#596D56] hover:text-[#465A44] hover:underline flex items-center gap-1 cursor-pointer bg-[#E3EBDD] px-2 py-0.5 rounded-[4px]"
+                                title="Promote to Decision"
                               >
-                                <FileCheck className="w-2.5 h-2.5" />
-                                <span>Convert to Decision</span>
+                                <FileCheck className="w-3 h-3" />
+                                <span>Record as Decision</span>
                               </button>
                               {user?.id === cmt.author_id && (
                                 <button
                                   type="button"
                                   onClick={() => handleDeleteComment(cmt.id)}
-                                  className="text-[#9CA3AF] hover:text-[#C54D4D] p-0.5"
+                                  className="text-[#70786D] hover:text-[#985C51] p-1 cursor-pointer"
                                 >
-                                  <Trash2 className="w-3 h-3" />
+                                  <Trash2 className="w-3.5 h-3.5" />
                                 </button>
                               )}
                             </div>
                           </div>
-                          <p className="text-xs text-[#20242B] whitespace-pre-wrap pl-5.5 leading-relaxed">
+                          <p className="text-[13px] text-[#33382F] whitespace-pre-wrap pl-7 leading-relaxed">
                             {cmt.body}
                           </p>
                         </div>
@@ -1242,38 +1026,37 @@ export function TaskDetailModal({
                       value={commentText}
                       onChange={(e) => setCommentText(e.target.value)}
                       placeholder="Write a comment..."
-                      className="flex-1 text-xs border border-[#E7E9ED] rounded-lg px-3 py-2 text-[#20242B] placeholder-[#9CA3AF] focus:outline-hidden focus:border-[#5965D8]"
+                      className="flex-1 text-[13px] motion-input rounded-[9px] px-3.5 py-2"
                     />
                     <button
                       type="submit"
                       disabled={submittingComment || !commentText.trim()}
-                      className="px-3 py-2 text-xs bg-[#20242B] hover:bg-[#323842] disabled:opacity-40 text-white font-medium rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+                      className="btn-primary px-4 py-2 text-[12.5px] rounded-[9px] disabled:opacity-40 flex items-center gap-1.5 cursor-pointer"
                     >
-                      <Send className="w-3 h-3" />
+                      <Send className="w-3.5 h-3.5" />
                       <span>Send</span>
                     </button>
                   </form>
                 </div>
               ) : (
-                /* Activity Log */
-                <div className="space-y-1.5 text-xs text-[#6D7480]">
+                <div className="space-y-2 text-[12.5px] text-[#5D655A]">
                   {task.activity.map((act) => (
                     <div
                       key={act.id}
-                      className="flex items-start gap-2 py-1 border-b border-[#F4F5F7] last:border-none"
+                      className="flex items-start gap-2.5 py-1.5 border-b border-[#EAE4D8] last:border-none"
                     >
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#9CA3AF] mt-1.5 shrink-0" />
+                      <span className="w-2 h-2 rounded-full bg-[#596D56] mt-1.5 shrink-0" />
                       <div className="flex-1">
-                        <span className="font-semibold text-[#20242B]">{act.user_name} </span>
+                        <span className="font-semibold text-[#33382F]">{act.user_name} </span>
                         <span>
                           {act.action_type === 'task_created' && 'created this task'}
                           {act.action_type === 'status_changed' && 'updated status'}
                           {act.action_type === 'task_blocked' && 'marked this task as blocked'}
                           {act.action_type === 'blocker_resolved' && 'resolved the blocker'}
-                          {act.action_type === 'decision_recorded' && 'recorded a decision note'}
+                          {act.action_type === 'decision_recorded' && 'recorded a decision'}
                           {act.action_type === 'task_assigned' && 'updated assignees'}
                         </span>
-                        <span className="text-[10px] text-[#9CA3AF] ml-2">
+                        <span className="text-[11px] text-[#70786D] ml-2">
                           {formatRelativeTime(act.created_at)}
                         </span>
                       </div>
@@ -1285,7 +1068,6 @@ export function TaskDetailModal({
           </div>
         ) : null}
 
-        {/* Blocker Modal */}
         {task && (
           <BlockerModal
             taskId={task.id}
@@ -1300,7 +1082,6 @@ export function TaskDetailModal({
           />
         )}
 
-        {/* Resolve Blocker Modal */}
         {task && (
           <ResolveBlockerModal
             taskId={task.id}
@@ -1315,7 +1096,6 @@ export function TaskDetailModal({
           />
         )}
 
-        {/* Decision Modal */}
         {task && (
           <DecisionModal
             taskId={task.id}
