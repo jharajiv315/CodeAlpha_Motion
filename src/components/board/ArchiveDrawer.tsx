@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { Task, BoardColumn } from '../../types/index.ts';
 import { api } from '../../lib/api.ts';
 import { PriorityBadge } from '../ui/PriorityBadge.tsx';
@@ -31,6 +31,17 @@ export function ArchiveDrawer({
 }: ArchiveDrawerProps) {
   const [search, setSearch] = useState('');
   const [restoringId, setRestoringId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -66,8 +77,14 @@ export function ArchiveDrawer({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden flex justify-end bg-[#33382F]/20 animate-in fade-in duration-150">
-      <div className="w-full max-w-md bg-[#FFFDF9] h-full shadow-xl flex flex-col p-6 space-y-4 border-l border-[#DED8CB]">
+    <div
+      className="fixed inset-0 z-50 overflow-hidden flex justify-end bg-[#33382F]/25 animate-backdrop-in"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-md bg-[#FFFDF9] h-full shadow-xl flex flex-col p-6 space-y-4 border-l border-[#DED8CB] animate-drawer-right"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-[#EAE4D8]">
           <div className="flex items-center gap-2.5">
@@ -76,7 +93,7 @@ export function ArchiveDrawer({
             </div>
             <div>
               <h2 className="text-[16px] font-semibold text-[#33382F]">Completed &amp; Archived</h2>
-              <p className="text-[12px] text-[#70786D]">
+              <p className="text-[12px] text-[#70786D]" data-tabular-nums="true">
                 {completedOrArchivedTasks.length} items resolved
               </p>
             </div>
@@ -85,6 +102,7 @@ export function ArchiveDrawer({
             type="button"
             onClick={onClose}
             className="p-1.5 text-[#70786D] hover:text-[#33382F] rounded-[6px] hover:bg-[#EDE7DA] transition-colors cursor-pointer"
+            aria-label="Close archive drawer"
           >
             <X className="w-4 h-4" />
           </button>

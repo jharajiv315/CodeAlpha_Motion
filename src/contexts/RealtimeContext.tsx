@@ -172,20 +172,20 @@ export function RealtimeProvider({ children }: { children: React.ReactNode }) {
         {toasts.map((t) => (
           <div
             key={t.id}
-            className="pointer-events-auto p-3 bg-white border border-[#E7E9ED] rounded-xl shadow-md text-xs transition-all duration-150 animate-in slide-in-from-bottom-2"
+            className="pointer-events-auto p-3.5 bg-[#FFFDF9] border border-[#DED8CB] rounded-[9px] shadow-md text-[12.5px] transition-all duration-150 animate-in slide-in-from-bottom-2"
           >
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <span className="font-semibold text-[10px] text-[#6D7480] uppercase tracking-wider block">
-                  {t.type === 'blocker' ? 'Blocker Radar' : t.type === 'decision' ? 'Decision' : 'Update'}
+                <span className="font-semibold text-[10.5px] text-[#70786D] uppercase tracking-wider block">
+                  {t.type === 'blocker' ? 'Blocker' : t.type === 'decision' ? 'Decision' : 'Update'}
                 </span>
-                <p className="font-medium text-[#20242B] text-xs mt-0.5 truncate">{t.message}</p>
-                {t.subtext && <p className="text-[11px] text-[#6D7480] mt-0.5 line-clamp-1">{t.subtext}</p>}
+                <p className="font-semibold text-[#33382F] text-[12.5px] mt-0.5 truncate">{t.message}</p>
+                {t.subtext && <p className="text-[11.5px] text-[#5D655A] mt-0.5 line-clamp-1">{t.subtext}</p>}
               </div>
               <button
                 type="button"
                 onClick={() => removeToast(t.id)}
-                className="text-[#9CA3AF] hover:text-[#20242B] p-0.5 rounded transition-colors"
+                className="text-[#70786D] hover:text-[#33382F] p-0.5 rounded-[4px] transition-colors cursor-pointer"
                 aria-label="Dismiss notification"
               >
                 <X className="w-3.5 h-3.5" />

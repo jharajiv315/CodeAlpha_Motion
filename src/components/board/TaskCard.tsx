@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import type { Task, BoardColumn } from '../../types/index.ts';
 import { PriorityBadge } from '../ui/PriorityBadge.tsx';
 import { api } from '../../lib/api.ts';
@@ -44,7 +44,19 @@ export function TaskCard({
   const [logDesc, setLogDesc] = useState('');
   const [isLoggingTime, setIsLoggingTime] = useState(false);
   const [timeSuccess, setTimeSuccess] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
   const overdue = isOverdue(task.due_date, !!task.completed_at);
+
+  useEffect(() => {
+    if (!showQuickMove) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setShowQuickMove(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showQuickMove]);
 
   const {
     attributes,
@@ -119,11 +131,13 @@ export function TaskCard({
           onOpenDetail(task.id);
         }
       }}
-      className={`group relative bg-[#FFFCF6] border border-[#EAE4D8] hover:border-[#DED8CB] rounded-[9px] p-3.5 space-y-2.5 cursor-grab active:cursor-grabbing select-none transition-colors ${
+      className={`group relative motion-card p-3.5 space-y-2.5 cursor-grab active:cursor-grabbing select-none ${
+        showQuickMove || showTimeLogger ? 'z-20' : ''
+      } ${
         isDragging ? 'opacity-40 border-dashed border-[#596D56] bg-[#E3EBDD]/40' : ''
       } ${
         isDragOverlay
-          ? 'border-[#DED8CB] shadow-[0_8px_30px_rgba(66,62,48,0.12)] -translate-y-0.5 cursor-grabbing z-50'
+          ? 'border-[#DED8CB] shadow-[0_12px_32px_rgba(51,56,47,0.14)] -translate-y-0.5 scale-[1.01] cursor-grabbing z-50'
           : ''
       }`}
       role="button"
@@ -155,7 +169,11 @@ export function TaskCard({
         </div>
 
         {/* Overflow menu (Keyboard accessible move-to-column & quick time log) */}
-        <div className="relative shrink-0" onClick={(e) => e.stopPropagation()}>
+        <div
+          ref={menuRef}
+          className="relative shrink-0"
+          onClick={(e) => e.stopPropagation()}
+        >
           <button
             type="button"
             onClick={() => setShowQuickMove((prev) => !prev)}
@@ -208,7 +226,7 @@ export function TaskCard({
       </div>
 
       {/* Task Title (13.5–14px, 600 weight, 1.4 line height, wraps up to 3 lines) */}
-      <h3 className="text-[13.5px] font-semibold text-[#33382F] leading-[1.4] line-clamp-3">
+      <h3 className="text-[13.5px] font-semibold text-[#33382F] group-hover:text-[#596D56] transition-colors leading-[1.4] line-clamp-3">
         {task.title}
       </h3>
 
@@ -261,7 +279,7 @@ export function TaskCard({
         <form
           onSubmit={handleQuickLogSubmit}
           onClick={(e) => e.stopPropagation()}
-          className="p-2.5 rounded-[6px] bg-[#F3EFE5] border border-[#DED8CB] space-y-2 text-[12px]"
+          className="p-2.5 rounded-[6px] bg-[#F3EFE5] border border-[#DED8CB] space-y-2 text-[12px] animate-view-in"
         >
           <div className="flex items-center justify-between">
             <span className="font-semibold text-[#33382F] text-[11.5px]">Log effort (hrs)</span>

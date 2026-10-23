@@ -58,7 +58,7 @@ export function BlockerRadarView({ onNavigateTab }: BlockerRadarViewProps) {
   }
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-y-auto p-6 md:p-8">
+    <div className="flex-1 flex flex-col h-full overflow-y-auto p-6 md:p-8 animate-view-in">
       <div className="max-w-4xl w-full mx-auto space-y-5">
         {/* Top breadcrumb & header per design.md Section 7.1 */}
         <div className="space-y-3 pb-4 border-b border-[#DED8CB]">
@@ -183,7 +183,7 @@ export function BlockerRadarView({ onNavigateTab }: BlockerRadarViewProps) {
                     )}
                   </div>
 
-                  <div className="text-[13px] text-[#33382F] leading-relaxed pl-4 border-l-2 border-[#A46F5C]">
+                  <div className="text-[13px] text-[#33382F] leading-relaxed bg-[#F3E7DD]/50 border border-[#DFC2B0] rounded-[8px] px-3 py-2">
                     <span className="font-semibold text-[#7B4B3A]">Reason: </span>
                     {b.reason}
                   </div>

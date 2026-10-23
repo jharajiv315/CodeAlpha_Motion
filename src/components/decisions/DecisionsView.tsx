@@ -57,7 +57,7 @@ export function DecisionsView({ onNavigateTab }: DecisionsViewProps) {
   }
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-y-auto p-6 md:p-8">
+    <div className="flex-1 flex flex-col h-full overflow-y-auto p-6 md:p-8 animate-view-in">
       <div className="max-w-4xl w-full mx-auto space-y-5">
         {/* Header per design.md Section 7.2 */}
         <div className="space-y-3 pb-4 border-b border-[#DED8CB]">

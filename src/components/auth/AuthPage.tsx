@@ -49,7 +49,7 @@ export function AuthPage() {
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center p-4 md:p-8 bg-[#F7F4EC] text-[#33382F]">
-      <div className="w-full max-w-5xl bg-[#FFFCF6] rounded-[12px] border border-[#DED8CB] shadow-sm overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[600px]">
+      <div className="w-full max-w-5xl bg-[#FFFCF6] rounded-[12px] border border-[#DED8CB] shadow-sm overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[600px] animate-view-in">
         {/* Left Modest Product-Story Column (42% / 5 cols on desktop) */}
         <div className="hidden lg:flex lg:col-span-5 bg-[#F1EBDD] border-r border-[#DED8CB] p-9 flex-col justify-between">
           {/* Top Brand Mark & Headline */}
@@ -91,7 +91,7 @@ export function AuthPage() {
               <p className="text-[13px] font-semibold text-[#33382F]">
                 Payment Webhook Handlers
               </p>
-              <div className="text-[11.5px] bg-[#F3E7DD] text-[#7B4B3A] px-2.5 py-1.5 rounded-[6px] border-l-2 border-[#A46F5C]">
+              <div className="text-[11.5px] bg-[#F3E7DD] text-[#7B4B3A] px-2.5 py-1.5 rounded-[6px] border border-[#DFC2B0]">
                 Blocked · Waiting on Stripe sandbox webhook secret
               </div>
             </div>

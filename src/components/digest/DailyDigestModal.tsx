@@ -134,11 +134,32 @@ export function DailyDigestModal({ isOpen, onClose }: DailyDigestModalProps) {
     }
   };
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (inspectedLog) {
+          setInspectedLog(null);
+        } else {
+          onClose();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, inspectedLog, onClose]);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#33382F]/20 p-4 sm:p-6 overflow-y-auto">
-      <div className="motion-modal rounded-[12px] max-w-3xl w-full flex flex-col max-h-[90vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[#33382F]/25 backdrop-blur-[1px] p-4 sm:p-6 overflow-y-auto animate-in fade-in duration-150"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="motion-modal rounded-[12px] max-w-3xl w-full flex flex-col max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-150"
+      >
         {/* Modal Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#EAE4D8] bg-[#FFFCF6] shrink-0">
           <div className="flex items-center gap-3">
@@ -553,8 +574,17 @@ export function DailyDigestModal({ isOpen, onClose }: DailyDigestModalProps) {
       </div>
 
       {inspectedLog && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center bg-[#33382F]/25 p-4">
-          <div className="motion-modal rounded-[12px] max-w-2xl w-full flex flex-col max-h-[85vh] overflow-hidden">
+        <div
+          onClick={(e) => {
+            e.stopPropagation();
+            setInspectedLog(null);
+          }}
+          className="fixed inset-0 z-60 flex items-center justify-center bg-[#33382F]/25 backdrop-blur-[1px] p-4 animate-in fade-in duration-150"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="motion-modal rounded-[12px] max-w-2xl w-full flex flex-col max-h-[85vh] overflow-hidden animate-in zoom-in-95 duration-150"
+          >
             <div className="flex items-center justify-between px-6 py-3.5 border-b border-[#EAE4D8] bg-[#FFFCF6]">
               <div>
                 <h3 className="text-[14px] font-semibold text-[#33382F] truncate">{inspectedLog.subject}</h3>

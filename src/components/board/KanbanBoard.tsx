@@ -356,7 +356,7 @@ export function KanbanBoard({ onNavigateTab, onOpenInvite }: KanbanBoardProps) {
   }
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#F7F4EC]">
+    <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#F7F4EC] animate-view-in">
       {/* Project Context Header (Pickolab reference-inspired) */}
       <div className="px-6 md:px-8 pt-5 pb-0 border-b border-[#DED8CB] bg-[#F7F4EC] shrink-0">
         {/* 1. Breadcrumb */}
@@ -672,7 +672,7 @@ export function KanbanBoard({ onNavigateTab, onOpenInvite }: KanbanBoardProps) {
           onOpenDetail={handleOpenDetail}
         />
       ) : viewMode === 'swimlanes' ? (
-        <div className="flex-1 overflow-y-auto px-6 md:px-8 py-5 space-y-5">
+        <div className="flex-1 overflow-y-auto px-6 md:px-8 py-5 space-y-5 animate-view-in">
           <DndContext
             sensors={sensors}
             collisionDetection={closestCorners}
@@ -774,7 +774,7 @@ export function KanbanBoard({ onNavigateTab, onOpenInvite }: KanbanBoardProps) {
         </div>
       ) : (
         /* Standard Kanban Board Track */
-        <div className="flex-1 overflow-x-auto overflow-y-hidden px-6 md:px-8 py-5">
+        <div className="flex-1 overflow-x-auto overflow-y-hidden px-6 md:px-8 py-5 animate-view-in">
           {loading && columns.length === 0 ? (
             <div className="p-8 text-[13.5px] text-[#70786D]">Loading project board...</div>
           ) : (

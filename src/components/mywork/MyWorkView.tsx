@@ -88,7 +88,7 @@ export function MyWorkView() {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-y-auto p-6 md:p-8">
+    <div className="flex-1 flex flex-col h-full overflow-y-auto p-6 md:p-8 animate-view-in">
       <div className="max-w-4xl w-full mx-auto space-y-6">
         {/* Header */}
         <div className="pb-4 border-b border-[#DED8CB] flex items-end justify-between gap-4">

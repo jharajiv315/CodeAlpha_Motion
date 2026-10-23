@@ -95,6 +95,7 @@ export function HeaderSearchBar({ onSearchFocus }: HeaderSearchBarProps) {
         <Search className="w-3.5 h-3.5 text-[#70786D] shrink-0 mr-2" />
 
         <input
+          id="global-task-search-input"
           ref={inputRef}
           type="text"
           value={searchQuery}

@@ -51,10 +51,13 @@ export function TaskDetailModal({
   const [activeTaskId, setActiveTaskId] = useState<string | null>(taskId);
   const [task, setTask] = useState<TaskDetail | null>(null);
   const [projectTasks, setProjectTasks] = useState<Task[]>([]);
+  const [fetchedColumns, setFetchedColumns] = useState<BoardColumn[]>([]);
   const [loading, setLoading] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [submittingComment, setSubmittingComment] = useState(false);
   const [activeTab, setActiveTab] = useState<'comments' | 'activity'>('comments');
+
+  const effectiveColumns = columns.length > 0 ? columns : fetchedColumns;
 
   // Dependencies state
   const [showAddDepForm, setShowAddDepForm] = useState(false);
@@ -102,19 +105,40 @@ export function TaskDetailModal({
         api.tasks.listByProject(res.task.project_id).then((pRes) => {
           setProjectTasks(pRes.tasks);
         }).catch(() => {});
+        if (columns.length === 0) {
+          api.projects.getColumns(res.task.project_id).then((cRes) => {
+            setFetchedColumns(cRes.columns || []);
+          }).catch(() => {});
+        }
       }
     } catch (err) {
       console.error('Failed to load task details:', err);
     } finally {
       setLoading(false);
     }
-  }, [activeTaskId]);
+  }, [activeTaskId, columns.length]);
 
   useEffect(() => {
     if (isOpen && activeTaskId) {
       loadTask();
     }
   }, [isOpen, activeTaskId, loadTask, refreshKey]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        e.key === 'Escape' &&
+        !isBlockerModalOpen &&
+        !isResolveModalOpen &&
+        !isDecisionModalOpen
+      ) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, isBlockerModalOpen, isResolveModalOpen, isDecisionModalOpen, onClose]);
 
   if (!isOpen || !activeTaskId) return null;
 
@@ -132,9 +156,18 @@ export function TaskDetailModal({
 
   const handleColumnChange = async (colId: string) => {
     if (!task || colId === task.column_id) return;
+    const matchedCol = effectiveColumns.find((c) => c.id === colId);
     try {
       await api.tasks.move(task.id, colId, 0);
-      setTask((prev) => (prev ? { ...prev, column_id: colId } : null));
+      setTask((prev) =>
+        prev
+          ? {
+              ...prev,
+              column_id: colId,
+              column_name: matchedCol ? matchedCol.name : prev.column_name,
+            }
+          : null
+      );
       onTaskUpdated?.();
     } catch (err) {
       console.error('Failed to change column:', err);
@@ -353,8 +386,14 @@ export function TaskDetailModal({
   const isOver = hasEstimate && timeSpent > estimated!;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center md:justify-end bg-[#33382F]/20 animate-in fade-in duration-150">
-      <div className="bg-[#FFFDF9] w-full md:w-[min(600px,48vw)] h-full max-h-screen flex flex-col border-l border-[#DED8CB] shadow-xl overflow-hidden">
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center md:justify-end bg-[#33382F]/25 backdrop-blur-[1px] animate-in fade-in duration-150"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="bg-[#FFFDF9] w-full md:w-[min(600px,48vw)] h-full max-h-screen flex flex-col border-l border-[#DED8CB] shadow-xl overflow-hidden animate-drawer-right"
+      >
         {/* 1. Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#EAE4D8] bg-[#FFFCF6] shrink-0">
           <div className="flex items-center gap-2 text-[12px] text-[#70786D] font-medium">
@@ -428,7 +467,7 @@ export function TaskDetailModal({
               {/* Context Metadata Row */}
               <div className="flex flex-wrap items-center gap-3 text-[12.5px]">
                 {/* Column */}
-                {columns.length > 0 && (
+                {effectiveColumns.length > 0 && (
                   <div className="flex items-center gap-1.5">
                     <span className="text-[#70786D] font-medium">Status</span>
                     <select
@@ -436,7 +475,7 @@ export function TaskDetailModal({
                       onChange={(e) => handleColumnChange(e.target.value)}
                       className="motion-input font-medium rounded-[6px] px-2.5 py-1 text-[12.5px] cursor-pointer"
                     >
-                      {columns.map((c) => (
+                      {effectiveColumns.map((c) => (
                         <option key={c.id} value={c.id}>
                           {c.name}
                         </option>
